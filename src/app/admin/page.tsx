@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, DollarSign, CheckCircle2, Clock, RefreshCw, Search, ArrowLeft, ExternalLink, ShieldCheck, Filter } from 'lucide-react';
+import { ShoppingBag, DollarSign, CheckCircle2, Clock, RefreshCw, Search, ArrowLeft, ExternalLink, ShieldCheck, Filter, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 interface OrderItem {
@@ -67,12 +67,10 @@ export default function AdminDashboardPage() {
 
     useEffect(() => {
         fetchOrders();
-        // Tự động làm mới dữ liệu đơn hàng mỗi 8 giây (Realtime Auto-polling)
         const interval = setInterval(fetchOrders, 8000);
         return () => clearInterval(interval);
     }, []);
 
-    // Cập nhật trạng thái đơn hàng thủ công từ Admin
     const handleUpdateStatus = async (orderId: string, newStatus: string) => {
         try {
             const res = await fetch('/api/orders', {
@@ -89,7 +87,6 @@ export default function AdminDashboardPage() {
         }
     };
 
-    // Lọc đơn hàng theo từ khóa tìm kiếm & Tab trạng thái
     const filteredOrders = orders.filter(o => {
         const matchesQuery = o.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
             o.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -99,241 +96,358 @@ export default function AdminDashboardPage() {
     });
 
     return (
-        <div style={{ minHeight: '100vh', backgroundColor: '#F8F9FA', color: '#2C352E', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+        <div style={{ minHeight: '100vh', backgroundColor: '#fbf9f5', color: '#3d4a3e', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
 
-            {/* HEADER DASHBOARD */}
-            <header style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #E2E8F0', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#5B6E5D', textDecoration: 'none', fontSize: '13px', fontWeight: 600, padding: '6px 12px', borderRadius: '8px', backgroundColor: '#F1F5F9' }}>
-                        <ArrowLeft size={16} /> Quay lại cửa hàng
+            {/* HEADER QUẢN TRỊ THEO DESIGN VIBE "NÀNG THƠ" */}
+            <header style={{
+                backgroundColor: 'rgba(251, 249, 245, 0.92)',
+                backdropFilter: 'blur(12px)',
+                borderBottom: '1px solid rgba(91, 110, 93, 0.18)',
+                padding: '20px 40px',
+                display: 'flex',
+                alignItems: 'center',
+                justify: 'space-between',
+                position: 'sticky',
+                top: 0,
+                zIndex: 100
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <Link href="/" style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        color: '#5b6e5d',
+                        textDecoration: 'none',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        letterSpacing: '0.05em',
+                        padding: '8px 16px',
+                        borderRadius: '20px',
+                        backgroundColor: '#f3efe6',
+                        border: '1px solid rgba(91, 110, 93, 0.2)',
+                        transition: 'all 0.2s'
+                    }}>
+                        <ArrowLeft size={14} /> QUAY LẠI CỬA HÀNG
                     </Link>
-                    <div style={{ height: '24px', width: '1px', backgroundColor: '#CBD5E1' }} />
-                    <h1 style={{ fontSize: '20px', fontWeight: 800, color: '#1E293B', margin: 0, letterSpacing: '-0.02em' }}>
-                        VYYY BOUTIQUE <span style={{ fontSize: '12px', fontWeight: 600, color: '#B87A5C', backgroundColor: 'rgba(184, 122, 92, 0.1)', padding: '2px 8px', borderRadius: '6px', marginLeft: '6px' }}>ADMIN DASHBOARD</span>
-                    </h1>
+
+                    <div style={{ height: '28px', width: '1px', backgroundColor: 'rgba(91, 110, 93, 0.2)' }} />
+
+                    <div>
+                        <span style={{ fontFamily: "'Cinzel', serif", fontSize: '18px', fontWeight: 700, letterSpacing: '0.12em', color: '#3d4a3e' }}>
+                            VYYY BOUTIQUE
+                        </span>
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: '#b87a5c', backgroundColor: 'rgba(184, 122, 92, 0.12)', padding: '3px 10px', borderRadius: '12px', marginLeft: '10px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                            ✦ ADMIN DASHBOARD
+                        </span>
+                    </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <button
                         onClick={fetchOrders}
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: '#475569' }}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '10px 18px',
+                            borderRadius: '20px',
+                            border: '1px solid rgba(91, 110, 93, 0.25)',
+                            backgroundColor: '#f3efe6',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            color: '#3d4a3e',
+                            letterSpacing: '0.04em'
+                        }}
                     >
-                        <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Làm mới
+                        <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> LÀM MỚI DỮ LIỆU
                     </button>
+
                     <a
                         href="https://my.sepay.vn"
                         target="_blank"
                         rel="noreferrer"
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', borderRadius: '8px', backgroundColor: '#0052FF', color: '#fff', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '10px 20px',
+                            borderRadius: '20px',
+                            backgroundColor: '#5b6e5d',
+                            color: '#ffffff',
+                            textDecoration: 'none',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            letterSpacing: '0.05em',
+                            boxShadow: '0 4px 14px rgba(91, 110, 93, 0.25)'
+                        }}
                     >
-                        <ExternalLink size={14} /> Mở SePay Dashboard
+                        <ExternalLink size={14} /> MỞ SEPAY
                     </a>
                 </div>
             </header>
 
             {/* CONTAINER NỘI DUNG MAIN */}
-            <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 24px' }}>
+            <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 32px' }}>
 
-                {/* STATS CARDS (THỐNG KÊ DOANH THU & ĐƠN HÀNG) */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+                {/* STATS CARDS THEO TÔNG MÀU NÀNG THƠ (SAGE GREEN, TERRACOTTA, CREAM) */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '40px' }}>
 
-                    <div style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '24px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#64748B' }}>
-                            <span style={{ fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>TỔNG DOANH THU THỰC NHẬN</span>
-                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {/* REVENUE CARD */}
+                    <div style={{
+                        backgroundColor: '#f3efe6',
+                        borderRadius: '24px',
+                        padding: '28px',
+                        border: '1px solid rgba(91, 110, 93, 0.2)',
+                        boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#657566' }}>
+                                TỔNG DOANH THU THỰC NHẬN
+                            </span>
+                            <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'rgba(91, 110, 93, 0.15)', color: '#5b6e5d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <DollarSign size={22} />
                             </div>
                         </div>
-                        <div style={{ fontSize: '28px', fontWeight: 900, color: '#0F172A', marginTop: '12px' }}>
-                            {stats.totalRevenue.toLocaleString('vi-VN')} đ
+                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: '32px', fontWeight: 700, color: '#3d4a3e', marginTop: '16px', letterSpacing: '-0.01em' }}>
+                            {stats.totalRevenue.toLocaleString('vi-VN')} <span style={{ fontSize: '20px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600 }}>đ</span>
                         </div>
-                        <div style={{ fontSize: '12px', color: '#10B981', marginTop: '6px', fontWeight: 600 }}>
-                            ✓ Khớp tiền tự động VietQR SePay & Tiền mặt
+                        <div style={{ fontSize: '12px', color: '#5b6e5d', marginTop: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Sparkles size={14} color="#b87a5c" /> Khớp tiền tự động VietQR SePay
                         </div>
                     </div>
 
-                    <div style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '24px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#64748B' }}>
-                            <span style={{ fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>ĐƠN ĐÃ THANH TOÁN</span>
-                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {/* PAID ORDERS CARD */}
+                    <div style={{
+                        backgroundColor: '#f3efe6',
+                        borderRadius: '24px',
+                        padding: '28px',
+                        border: '1px solid rgba(91, 110, 93, 0.2)',
+                        boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#657566' }}>
+                                ĐƠN HÀNG ĐÃ THANH TOÁN
+                            </span>
+                            <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'rgba(184, 122, 92, 0.15)', color: '#b87a5c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <CheckCircle2 size={22} />
                             </div>
                         </div>
-                        <div style={{ fontSize: '28px', fontWeight: 900, color: '#0F172A', marginTop: '12px' }}>
-                            {stats.paidOrders} <span style={{ fontSize: '14px', fontWeight: 500, color: '#64748B' }}>/ {stats.totalOrders} đơn</span>
+                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: '32px', fontWeight: 700, color: '#3d4a3e', marginTop: '16px' }}>
+                            {stats.paidOrders} <span style={{ fontSize: '15px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, color: '#657566' }}>/ {stats.totalOrders} đơn</span>
                         </div>
-                        <div style={{ fontSize: '12px', color: '#3B82F6', marginTop: '6px', fontWeight: 600 }}>
-                            ⚡ Đã kích hoạt giao hàng
+                        <div style={{ fontSize: '12px', color: '#b87a5c', marginTop: '8px', fontWeight: 600 }}>
+                            ✦ Đã sẵn sàng đóng gói & giao hàng
                         </div>
                     </div>
 
-                    <div style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '24px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#64748B' }}>
-                            <span style={{ fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>ĐƠN CHỜ THANH TOÁN</span>
-                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {/* PENDING CARD */}
+                    <div style={{
+                        backgroundColor: '#f3efe6',
+                        borderRadius: '24px',
+                        padding: '28px',
+                        border: '1px solid rgba(91, 110, 93, 0.2)',
+                        boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#657566' }}>
+                                ĐƠN CHỜ CHUYỂN KHOẢN
+                            </span>
+                            <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'rgba(217, 119, 6, 0.15)', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <Clock size={22} />
                             </div>
                         </div>
-                        <div style={{ fontSize: '28px', fontWeight: 900, color: '#D97706', marginTop: '12px' }}>
-                            {stats.pendingOrders} <span style={{ fontSize: '14px', fontWeight: 500, color: '#64748B' }}>đơn</span>
+                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: '32px', fontWeight: 700, color: '#D97706', marginTop: '16px' }}>
+                            {stats.pendingOrders} <span style={{ fontSize: '15px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, color: '#657566' }}>đơn</span>
                         </div>
-                        <div style={{ fontSize: '12px', color: '#F59E0B', marginTop: '6px', fontWeight: 600 }}>
-                            ⏳ Đang lắng nghe Webhook ngân hàng
+                        <div style={{ fontSize: '12px', color: '#D97706', marginTop: '8px', fontWeight: 600 }}>
+                            ⏳ Lắng nghe Webhook MBBank Realtime
                         </div>
                     </div>
 
                 </div>
 
-                {/* CÔNG CỤ TÌM KIẾM & BỘ LỌC ĐƠN HÀNG */}
-                <div style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '20px', marginBottom: '24px', display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between' }}>
+                {/* TÌM KIẾM & BỘ LỌC ĐƠN HÀNG */}
+                <div style={{
+                    backgroundColor: '#f3efe6',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(91, 110, 93, 0.2)',
+                    padding: '20px 24px',
+                    marginBottom: '28px',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '20px',
+                    alignItems: 'center',
+                    justify: 'space-between'
+                }}>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: '280px', backgroundColor: '#F8FAFC', padding: '8px 14px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                        <Search size={18} color="#94A3B8" />
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        flex: 1,
+                        minWidth: '300px',
+                        backgroundColor: '#fbf9f5',
+                        padding: '10px 18px',
+                        borderRadius: '30px',
+                        border: '1px solid rgba(91, 110, 93, 0.2)'
+                    }}>
+                        <Search size={18} color="#94a395" />
                         <input
                             type="text"
-                            placeholder="Tìm theo Mã đơn (VYYY-xxx), Tên khách, Số điện thoại..."
+                            placeholder="Tìm kiếm Mã đơn (VYYY-xxx), Tên nàng thơ, Số điện thoại..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '13px' }}
+                            style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '13px', color: '#3d4a3e' }}
                         />
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Filter size={16} color="#64748B" />
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: '#64748B' }}>Trạng thái:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <Filter size={15} color="#657566" />
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#657566', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Lọc:</span>
                         {['ALL', 'CHO_THANH_TOAN', 'DA_THANH_TOAN', 'HOAN_THANH'].map((st) => (
                             <button
                                 key={st}
                                 onClick={() => setStatusFilter(st)}
                                 style={{
-                                    padding: '6px 12px',
-                                    borderRadius: '8px',
+                                    padding: '8px 16px',
+                                    borderRadius: '20px',
                                     border: 'none',
-                                    fontSize: '12px',
+                                    fontSize: '11px',
                                     fontWeight: 700,
                                     cursor: 'pointer',
-                                    backgroundColor: statusFilter === st ? '#5B6E5D' : '#F1F5F9',
-                                    color: statusFilter === st ? '#ffffff' : '#475569'
+                                    letterSpacing: '0.04em',
+                                    transition: 'all 0.2s',
+                                    backgroundColor: statusFilter === st ? '#5b6e5d' : 'transparent',
+                                    color: statusFilter === st ? '#ffffff' : '#657566'
                                 }}
                             >
-                                {st === 'ALL' ? 'Tất cả' : st === 'CHO_THANH_TOAN' ? 'Chờ thanh toán' : st === 'DA_THANH_TOAN' ? 'Đã thanh toán' : 'Hoàn thành'}
+                                {st === 'ALL' ? 'TẤT CẢ' : st === 'CHO_THANH_TOAN' ? 'CHỜ TIỀN' : st === 'DA_THANH_TOAN' ? 'ĐÃ TIỀN' : 'HOÀN THÀNH'}
                             </button>
                         ))}
                     </div>
 
                 </div>
 
-                {/* BẢNG DANH SÁCH ĐƠN HÀNG (ORDER TABLE) */}
-                <div style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+                {/* BẢNG ĐƠN HÀNG PHONG CÁCH BOUTIQUE KHÁCH HÀNG */}
+                <div style={{
+                    backgroundColor: '#f3efe6',
+                    borderRadius: '24px',
+                    border: '1px solid rgba(91, 110, 93, 0.2)',
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
+                }}>
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
                             <thead>
-                                <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    <th style={{ padding: '16px 20px' }}>Mã Đơn / Thời Gian</th>
-                                    <th style={{ padding: '16px 20px' }}>Thông Tin Khách Hàng</th>
-                                    <th style={{ padding: '16px 20px' }}>Sản Phẩm Đặt Mua</th>
-                                    <th style={{ padding: '16px 20px' }}>Phương Thức & Tổng Tiền</th>
-                                    <th style={{ padding: '16px 20px' }}>Trạng Thái Thống Kê</th>
-                                    <th style={{ padding: '16px 20px', textAlign: 'center' }}>Hành Động Admin</th>
+                                <tr style={{ backgroundColor: 'rgba(91, 110, 93, 0.08)', borderBottom: '1px solid rgba(91, 110, 93, 0.15)', color: '#5b6e5d', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                    <th style={{ padding: '20px 24px' }}>Mã Đơn / Thời Gian</th>
+                                    <th style={{ padding: '20px 24px' }}>Thông Tin Nàng Thơ</th>
+                                    <th style={{ padding: '20px 24px' }}>Sản Phẩm Đã Chọn</th>
+                                    <th style={{ padding: '20px 24px' }}>Phương Thức & Giá</th>
+                                    <th style={{ padding: '20px 24px' }}>Trạng Thái Thống Kê</th>
+                                    <th style={{ padding: '20px 24px', textAlign: 'center' }}>Hành Động</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredOrders.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} style={{ textAlign: 'center', padding: '48px', color: '#94A3B8' }}>
-                                            <ShoppingBag size={40} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
-                                            Chưa tìm thấy đơn hàng nào phù hợp
+                                        <td colSpan={6} style={{ textAlign: 'center', padding: '60px', color: '#94a395' }}>
+                                            <ShoppingBag size={48} style={{ margin: '0 auto 16px', opacity: 0.4, color: '#5b6e5d' }} />
+                                            <div style={{ fontFamily: "'Cinzel', serif", fontSize: '16px', color: '#3d4a3e' }}>Chưa tìm thấy đơn hàng nào phù hợp</div>
                                         </td>
                                     </tr>
                                 ) : (
                                     filteredOrders.map((order) => (
-                                        <tr key={order.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background-color 0.15s' }}>
+                                        <tr key={order.id} style={{ borderBottom: '1px solid rgba(91, 110, 93, 0.1)' }}>
 
                                             {/* Mã đơn */}
-                                            <td style={{ padding: '16px 20px', verticalAlign: 'top' }}>
-                                                <div style={{ fontWeight: 800, color: '#0F172A', fontSize: '14px' }}>{order.id}</div>
-                                                <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '4px' }}>
+                                            <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
+                                                <div style={{ fontFamily: "'Cinzel', serif", fontWeight: 700, color: '#3d4a3e', fontSize: '15px' }}>{order.id}</div>
+                                                <div style={{ fontSize: '11px', color: '#94a395', marginTop: '6px' }}>
                                                     {new Date(order.createdAt).toLocaleString('vi-VN')}
                                                 </div>
                                             </td>
 
-                                            {/* Thông tin khách hàng */}
-                                            <td style={{ padding: '16px 20px', verticalAlign: 'top' }}>
-                                                <div style={{ fontWeight: 700, color: '#1E293B' }}>{order.customerName}</div>
-                                                <div style={{ fontSize: '12px', color: '#0052FF', fontWeight: 600, marginTop: '2px' }}>{order.phone}</div>
-                                                <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px', maxWidth: '220px', lineHeight: '1.4' }}>
+                                            {/* Thông tin khách */}
+                                            <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
+                                                <div style={{ fontWeight: 700, color: '#3d4a3e', fontSize: '14px' }}>{order.customerName}</div>
+                                                <div style={{ fontSize: '12px', color: '#b87a5c', fontWeight: 700, marginTop: '2px' }}>{order.phone}</div>
+                                                <div style={{ fontSize: '12px', color: '#657566', marginTop: '6px', maxWidth: '240px', lineHeight: '1.4' }}>
                                                     📍 {order.address}
                                                 </div>
                                                 {order.note && (
-                                                    <div style={{ fontSize: '11px', color: '#D97706', fontStyle: 'italic', marginTop: '4px' }}>
-                                                        📝 Note: {order.note}
+                                                    <div style={{ fontSize: '11px', color: '#b87a5c', fontStyle: 'italic', marginTop: '6px', backgroundColor: 'rgba(184, 122, 92, 0.08)', padding: '4px 8px', borderRadius: '6px' }}>
+                                                        📝 {order.note}
                                                     </div>
                                                 )}
                                             </td>
 
-                                            {/* Danh sách sản phẩm */}
-                                            <td style={{ padding: '16px 20px', verticalAlign: 'top' }}>
+                                            {/* Sản phẩm */}
+                                            <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
                                                 {order.items.map((item, idx) => (
-                                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                                                        <img src={item.image} alt={item.productName} style={{ width: '36px', height: '44px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #E2E8F0' }} />
+                                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                                                        <img src={item.image} alt={item.productName} style={{ width: '40px', height: '52px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(91, 110, 93, 0.2)' }} />
                                                         <div>
-                                                            <div style={{ fontWeight: 600, fontSize: '12px', color: '#334155' }}>{item.productName}</div>
-                                                            <div style={{ fontSize: '11px', color: '#64748B' }}>
-                                                                Size: <strong>{item.size}</strong> • Màu: <strong>{item.color}</strong> • x{item.quantity}
+                                                            <div style={{ fontWeight: 700, fontSize: '12px', color: '#3d4a3e' }}>{item.productName}</div>
+                                                            <div style={{ fontSize: '11px', color: '#657566', marginTop: '2px' }}>
+                                                                Size: <strong style={{ color: '#3d4a3e' }}>{item.size}</strong> • Màu: <strong style={{ color: '#3d4a3e' }}>{item.color}</strong> • x{item.quantity}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 ))}
                                             </td>
 
-                                            {/* Phương thức & Tổng tiền */}
-                                            <td style={{ padding: '16px 20px', verticalAlign: 'top' }}>
-                                                <div style={{ fontSize: '15px', fontWeight: 900, color: '#B87A5C' }}>
+                                            {/* Tổng tiền */}
+                                            <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
+                                                <div style={{ fontFamily: "'Cinzel', serif", fontSize: '16px', fontWeight: 700, color: '#b87a5c' }}>
                                                     {order.totalPrice.toLocaleString('vi-VN')} đ
                                                 </div>
-                                                <div style={{ marginTop: '4px' }}>
+                                                <div style={{ marginTop: '6px' }}>
                                                     {order.paymentMethod === 'VIETQR' ? (
-                                                        <span style={{ fontSize: '11px', fontWeight: 700, backgroundColor: 'rgba(0, 82, 255, 0.1)', color: '#0052FF', padding: '3px 8px', borderRadius: '6px' }}>
-                                                            ⚡ Chuyển khoản VietQR SePay
+                                                        <span style={{ fontSize: '10px', fontWeight: 700, backgroundColor: 'rgba(91, 110, 93, 0.15)', color: '#5b6e5d', padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.04em' }}>
+                                                            ⚡ VIETQR SEPAY
                                                         </span>
                                                     ) : (
-                                                        <span style={{ fontSize: '11px', fontWeight: 700, backgroundColor: 'rgba(100, 116, 139, 0.1)', color: '#475569', padding: '3px 8px', borderRadius: '6px' }}>
-                                                            💵 Thanh toán COD
+                                                        <span style={{ fontSize: '10px', fontWeight: 700, backgroundColor: 'rgba(101, 117, 102, 0.15)', color: '#657566', padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.04em' }}>
+                                                            💵 THANH TOÁN COD
                                                         </span>
                                                     )}
                                                 </div>
                                             </td>
 
-                                            {/* Trạng thái đơn */}
-                                            <td style={{ padding: '16px 20px', verticalAlign: 'top' }}>
+                                            {/* Trạng thái */}
+                                            <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
                                                 {order.status === 'DA_THANH_TOAN' ? (
                                                     <div>
-                                                        <span style={{ fontSize: '12px', fontWeight: 800, backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#059669', padding: '4px 10px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                                        <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: 'rgba(91, 110, 93, 0.2)', color: '#5b6e5d', padding: '6px 12px', borderRadius: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}>
                                                             <ShieldCheck size={14} /> ĐÃ THANH TOÁN
                                                         </span>
                                                         {order.paidAt && (
-                                                            <div style={{ fontSize: '10px', color: '#10B981', marginTop: '4px' }}>
-                                                                Khớp Webhook lúc: {new Date(order.paidAt).toLocaleTimeString('vi-VN')}
+                                                            <div style={{ fontSize: '10px', color: '#5b6e5d', marginTop: '6px' }}>
+                                                                Khớp lúc: {new Date(order.paidAt).toLocaleTimeString('vi-VN')}
                                                             </div>
                                                         )}
                                                     </div>
                                                 ) : order.status === 'CHO_THANH_TOAN' ? (
-                                                    <span style={{ fontSize: '12px', fontWeight: 800, backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#D97706', padding: '4px 10px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                                    <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: 'rgba(217, 119, 6, 0.15)', color: '#D97706', padding: '6px 12px', borderRadius: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}>
                                                         <Clock size={14} /> CHỜ CHUYỂN KHOẢN
                                                     </span>
                                                 ) : (
-                                                    <span style={{ fontSize: '12px', fontWeight: 800, backgroundColor: '#F1F5F9', color: '#475569', padding: '4px 10px', borderRadius: '8px' }}>
+                                                    <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: '#fbf9f5', color: '#657566', padding: '6px 12px', borderRadius: '16px' }}>
                                                         {order.status}
                                                     </span>
                                                 )}
                                             </td>
 
-                                            {/* Nút hành động */}
-                                            <td style={{ padding: '16px 20px', verticalAlign: 'top', textAlign: 'center' }}>
+                                            {/* Hành động */}
+                                            <td style={{ padding: '20px 24px', verticalAlign: 'top', textAlign: 'center' }}>
                                                 {order.status === 'CHO_THANH_TOAN' && (
                                                     <button
                                                         onClick={() => handleUpdateStatus(order.id, 'DA_THANH_TOAN')}
-                                                        style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', backgroundColor: '#10B981', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                                                        style={{ padding: '8px 14px', borderRadius: '12px', border: 'none', backgroundColor: '#5b6e5d', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.04em' }}
                                                     >
                                                         Xác nhận đã nhận tiền
                                                     </button>
@@ -341,9 +455,9 @@ export default function AdminDashboardPage() {
                                                 {order.status === 'DA_THANH_TOAN' && (
                                                     <button
                                                         onClick={() => handleUpdateStatus(order.id, 'HOAN_THANH')}
-                                                        style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #CBD5E1', backgroundColor: '#fff', color: '#475569', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                                                        style={{ padding: '8px 14px', borderRadius: '12px', border: '1px solid rgba(91, 110, 93, 0.3)', backgroundColor: '#fbf9f5', color: '#5b6e5d', fontSize: '11px', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.04em' }}
                                                     >
-                                                        Hoàn thành đơn ➔
+                                                        Hoàn thành ➔
                                                     </button>
                                                 )}
                                             </td>
