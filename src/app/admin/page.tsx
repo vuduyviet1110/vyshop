@@ -104,6 +104,7 @@ interface Stats {
 }
 
 export default function AdminDashboardPage() {
+    const [mounted, setMounted] = useState(false);
     const [orders, setOrders] = useState<Order[]>([]);
     const [stats, setStats] = useState<Stats>({
         totalRevenue: 0,
@@ -114,6 +115,10 @@ export default function AdminDashboardPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('ALL');
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -161,8 +166,12 @@ export default function AdminDashboardPage() {
         return matchesQuery && matchesFilter;
     });
 
+    if (!mounted) {
+        return <div suppressHydrationWarning style={{ minHeight: '100vh', backgroundColor: '#fbf9f5' }} />;
+    }
+
     return (
-        <div style={{ minHeight: '100vh', backgroundColor: '#fbf9f5', color: '#3d4a3e', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div suppressHydrationWarning style={{ minHeight: '100vh', backgroundColor: '#fbf9f5', color: '#3d4a3e', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
 
             {/* HEADER BOUTIQUE */}
             <header style={{
@@ -172,7 +181,7 @@ export default function AdminDashboardPage() {
                 padding: '20px 40px',
                 display: 'flex',
                 alignItems: 'center',
-                justify: 'space-between',
+                justifyContent: 'space-between',
                 position: 'sticky',
                 top: 0,
                 zIndex: 100
@@ -356,7 +365,7 @@ export default function AdminDashboardPage() {
                     flexWrap: 'wrap',
                     gap: '20px',
                     alignItems: 'center',
-                    justify: 'space-between'
+                    justifyContent: 'space-between'
                 }}>
 
                     <div style={{
