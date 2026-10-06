@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { BANK_CONFIG } from '../../../../config/bankConfig';
+import { prisma } from '../../../../lib/prisma';
 
 // Định dạng dữ liệu chuẩn SePay gửi về Webhook
 export interface SepayWebhookPayload {
@@ -63,12 +64,35 @@ export async function POST(request: Request) {
         console.log(`🔎 [SEPAY MATCHING]: Tìm thấy từ khóa khớp đơn hàng: "${matchedKey}" | Số tiền: ${transferAmount?.toLocaleString('vi-VN')} VNĐ`);
 
         // 3. Tự động chuyển trạng thái đơn hàng sang ĐÃ THANH TOÁN
-        if (matchedKey && globalThis.__VYYY_ORDERS__[matchedKey]) {
-            globalThis.__VYYY_ORDERS__[matchedKey].status = 'ĐÃ THANH TOÁN (VIETQR AUTOMATIC)';
-            globalThis.__VYYY_ORDERS__[matchedKey].paidAmount = transferAmount;
-            globalThis.__VYYY_ORDERS__[matchedKey].paidAt = new Date().toISOString();
+        if (matchedKey) {
+            // Nếu có DATABASE_URL -> Cập nhật vào PostgreSQL Supabase / Neon
+            if (process.env.DATABASE_URL) {
+                try {
+                    await prisma.order.updateMany({
+                        where: {
+                            OR: [
+                                { orderCode: matchedKey },
+                                { phone: matchedKey }
+                            ]
+                        },
+                        data: {
+                            status: 'DA_THANH_TOAN',
+                            paidAmount: transferAmount,
+                            paidAt: new Date()
+                        }
+                    });
+                    console.log(`✅ [PRISMA POSTGRESQL SUCCESS]: Đã cập nhật đơn hàng ${matchedKey} sang ĐÃ THANH TOÁN trong CSDL!`);
+                } catch (dbErr) {
+                    console.error('⚠️ [PRISMA UPDATE ERR]:', dbErr);
+                }
+            }
 
-            console.log(`✅ [SEPAY AUTOMATION SUCCESS]: Đơn hàng ${matchedKey} đã tự động cập nhật trạng thái THANH TOÁN THÀNH CÔNG!`);
+            // Đồng thời cập nhật vào In-Memory Fallback
+            if (globalThis.__VYYY_ORDERS__ && globalThis.__VYYY_ORDERS__[matchedKey]) {
+                globalThis.__VYYY_ORDERS__[matchedKey].status = 'ĐÃ THANH TOÁN (VIETQR AUTOMATIC)';
+                globalThis.__VYYY_ORDERS__[matchedKey].paidAmount = transferAmount;
+                globalThis.__VYYY_ORDERS__[matchedKey].paidAt = new Date().toISOString();
+            }
         }
 
         // Trả về response HTTP 200 cho SePay để xác nhận đã nhận được Webhook

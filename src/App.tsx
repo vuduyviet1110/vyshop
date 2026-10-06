@@ -615,6 +615,34 @@ export const App: React.FC = () => {
                       }
                     }
 
+                    // Gửi đơn hàng về Server lưu trữ Realtime cho Admin Dashboard
+                    try {
+                      await fetch('/api/orders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          customerName: customerInfo.name,
+                          phone: customerInfo.phone,
+                          address: customerInfo.address,
+                          note: customerInfo.note,
+                          items: cartItems.map(item => ({
+                            id: item.id,
+                            productName: item.product.name,
+                            size: item.size,
+                            color: item.color,
+                            quantity: item.quantity,
+                            price: item.product.price,
+                            image: item.product.image
+                          })),
+                          totalPrice: cartTotalPrice,
+                          paymentMethod,
+                          status: paymentMethod === 'COD' ? 'CHO_THANH_TOAN' : 'CHO_THANH_TOAN'
+                        })
+                      });
+                    } catch (err) {
+                      console.error('Lỗi lưu đơn hàng:', err);
+                    }
+
                     if (paymentMethod === 'VIETQR') {
                       setIsVerifyingQR(true);
                       setTimeout(() => {
