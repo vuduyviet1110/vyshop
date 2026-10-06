@@ -1,0 +1,941 @@
+:root {
+  --bg-main: #fbf9f5;
+  --bg-card: #f3efe6;
+  --bg-header: rgba(251, 249, 245, 0.95);
+
+  --text-primary: #3d4a3e;
+  --text-secondary: #657566;
+  --text-muted: #94a395;
+
+  --accent-sage: #5b6e5d;
+  --accent-olive: #475749;
+  --accent-terracotta: #b87a5c;
+  --accent-cream: #fbf9f5;
+
+  --border-light: rgba(91, 110, 93, 0.15);
+  --border-sage: rgba(91, 110, 93, 0.3);
+
+  --font-serif: 'Cinzel', serif;
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+.vyyy-heading {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.vyyy-subheading {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 11px;
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #3d4a3e 0%, #5b6e5d 50%, #b87a5c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ==========================================
+   PRODUCT CARD HOVER ANIMATIONS & EFFECTS
+   ========================================== */
+.product-card {
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  cursor: pointer;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 32px rgba(91, 110, 93, 0.15);
+}
+
+.product-card-image {
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), filter 0.4s ease;
+}
+
+.product-card:hover .product-card-image {
+  transform: scale(1.08);
+  filter: brightness(1.03);
+}
+
+.product-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(61, 74, 62, 0.25);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-card:hover .product-card-overlay {
+  opacity: 1;
+}
+
+.product-quick-btn {
+  transform: translateY(15px);
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.2s ease;
+}
+
+.product-card:hover .product-quick-btn {
+  transform: translateY(0);
+}
+
+/* Keyframes xoay bánh xe khi đẩy sào ra bên trái */
+@keyframes rotateWheelLeft {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(-720deg);
+  }
+}
+
+/* Keyframes xoay bánh xe khi sào mới đi vào từ bên phải */
+@keyframes rotateWheelRight {
+  0% {
+    transform: rotate(720deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* Keyframes chuyển sào treo cũ trượt lướt bánh xe nhanh mượt ra bên trái */
+@keyframes rollRackOutLeft {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(-100vw);
+    opacity: 0.2;
+  }
+}
+
+/* Keyframes chuyển sào treo mới trượt lướt bánh xe nối đuôi vào từ bên phải */
+@keyframes rollRackInRight {
+  0% {
+    transform: translateX(100vw);
+    opacity: 0.2;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.rack-rolling-out {
+  animation: rollRackOutLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+}
+
+.rack-rolling-in {
+  animation: rollRackInRight 0.5s cubic-bezier(0, 0, 0.2, 1) forwards !important;
+}
+
+.rack-rolling-out .rack-caster-wheel {
+  animation: rotateWheelLeft 0.5s linear infinite !important;
+}
+
+.rack-rolling-in .rack-caster-wheel {
+  animation: rotateWheelRight 0.5s linear infinite !important;
+}
+
+/* ==========================================
+   BLACK INDUSTRIAL WHEELED RACK (SÀO SẮT ĐEN CÓ BÁNH XE XOAY)
+   Mốc dọc: sào ở top 56px. Mắc vắt lên sào. Áo lồng vào vai mắc.
+   ========================================== */
+.boutique-rack-container {
+  --bar-top: 46px;
+  --hook-h: 22px;
+  --shoulder-w: 96px;
+  --garment-w: 110px;
+
+  background: transparent;
+  border: none;
+  padding: 22px 46px 56px;
+  position: relative;
+  overflow: visible;
+  transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+/* Thanh sào sắt chính (Main Hanger Bar) */
+.metallic-hanger-bar {
+  position: absolute;
+  top: var(--bar-top);
+  left: 30px;
+  right: 30px;
+  height: 13px;
+  background: linear-gradient(180deg, #6a6f73 0%, #2a2d30 48%, #0a0b0c 100%);
+  border-radius: 7px;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.45);
+  /* nằm sau dàn móc: cần móc quàng qua sào vẽ đè lên -> đọc ra "đang mắc vào sào" */
+  z-index: 1;
+}
+
+/* Chốt chặn tròn 2 đầu sào */
+.metallic-hanger-bar::before,
+.metallic-hanger-bar::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  width: 23px;
+  height: 23px;
+  background: radial-gradient(circle at 35% 30%, #74797d 0%, #121415 78%);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.metallic-hanger-bar::before {
+  left: -10px;
+}
+
+.metallic-hanger-bar::after {
+  right: -10px;
+}
+
+/* 2 cột đứng 2 bên */
+.rack-side-pillar {
+  position: absolute;
+  top: var(--bar-top);
+  bottom: 18px;
+  width: 15px;
+  background: linear-gradient(90deg, #4b4f52 0%, #1c1e20 52%, #050505 100%);
+  border-radius: 8px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.35);
+  z-index: 402;
+}
+
+.rack-side-pillar.left {
+  left: 34px;
+}
+
+.rack-side-pillar.right {
+  right: 34px;
+}
+
+/* Thanh sắt ngang cân bằng đáy */
+.rack-base-bar {
+  position: absolute;
+  bottom: 18px;
+  left: 30px;
+  right: 30px;
+  height: 11px;
+  background: linear-gradient(180deg, #3a3d40 0%, #0e0f10 100%);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 401;
+}
+
+/* 2 tầng kệ lưới sắt phía dưới (để giày, túi) như sào thật */
+.rack-shelf {
+  position: absolute;
+  left: 44px;
+  right: 44px;
+  height: 9px;
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(90deg, #26292b 0 2px, rgba(0, 0, 0, 0) 2px 11px),
+    linear-gradient(180deg, #3a3d40 0%, #101112 100%);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  z-index: 401;
+}
+
+.rack-shelf.upper {
+  bottom: 74px;
+}
+
+.rack-shelf.lower {
+  bottom: 36px;
+}
+
+/* Cụm chân bánh xe */
+.rack-wheel-assembly {
+  position: absolute;
+  bottom: -6px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  z-index: 403;
+}
+
+.rack-wheel-assembly.left {
+  left: 20px;
+}
+
+.rack-wheel-assembly.right {
+  right: 20px;
+}
+
+.rack-caster-wheel {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 36%, #6d7174 0%, #232629 62%, #0d0e0f 100%);
+  border: 3px solid #000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ---- Dàn áo treo trên sào ---- */
+.rack-clothes-wrapper {
+  display: flex;
+  align-items: flex-start;
+  /* đẩy đỉnh móc lên đúng mép trên thanh sào: móc vắt qua sào */
+  padding: calc(var(--bar-top) - var(--hook-h) + 4px) 54px 0;
+  position: relative;
+  min-height: 400px;
+  overflow-x: auto;
+  overflow-y: visible;
+  z-index: 10;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  perspective: 1700px;
+  perspective-origin: 50% 0%;
+  transition: padding-right 0.3s ease;
+}
+
+.rack-clothes-wrapper.has-selected {
+  padding-right: 280px;
+}
+
+.rack-clothes-wrapper::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* ---- Một chiếc áo trên móc ---- */
+.hanging-item {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--shoulder-w);
+  /* chồng lấn: áo trái che một phần áo phải, như sào thật */
+  margin-right: -40px;
+  cursor: pointer;
+  transform-origin: 50% 6px;
+  transform-style: preserve-3d;
+  will-change: transform;
+  /* áo bên trái nằm trên áo bên phải */
+  z-index: calc(300 - var(--i));
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.4s ease,
+    opacity 0.4s ease;
+}
+
+/* Lớp đung đưa quanh điểm móc vắt lên sào */
+.hanging-item .sway-root {
+  transform-origin: 50% 5px;
+  animation: hangerSway 5.4s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -0.41s);
+  transform-style: preserve-3d;
+}
+
+@keyframes hangerSway {
+  0% {
+    transform: rotate(-0.8deg);
+  }
+
+  100% {
+    transform: rotate(0.8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hanging-item .sway-root {
+    animation: none;
+  }
+}
+
+/* Mắc + áo là một khối, nghiêng theo chiều xếp lớp */
+.wooden-hanger {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateY(-24deg) rotateZ(var(--tilt, -2deg));
+  transform-origin: 50% 5px;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Cần móc kim loại vắt qua thanh sào */
+.hanger-hook {
+  width: 13px;
+  height: var(--hook-h);
+  margin-bottom: -2px;
+  border: 2px solid #b9bec3;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+  /* nổi lên trước thanh sào -> thấy rõ móc quàng qua */
+  position: relative;
+  z-index: 410;
+}
+
+/* Cổ mắc nối cần móc xuống vai */
+.wooden-hanger::before {
+  content: '';
+  width: 13px;
+  height: 11px;
+  background: linear-gradient(180deg, #e9cbac 0%, #c9986f 100%);
+  border-radius: 3px 3px 2px 2px;
+  margin-bottom: -2px;
+  z-index: 6;
+}
+
+/* Vai mắc gỗ - vồng nhẹ hai đầu như mắc thật */
+.hanger-shoulder {
+  width: var(--shoulder-w);
+  height: 9px;
+  background: linear-gradient(180deg, #f2dac1 0%, #d9ad86 58%, #b9875f 100%);
+  border-radius: 10px 10px 7px 7px / 10px 10px 5px 5px;
+  box-shadow:
+    0 3px 7px rgba(0, 0, 0, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.65);
+  position: relative;
+  z-index: 6;
+}
+
+/* hai đầu vai mắc hơi trễ xuống */
+.hanger-shoulder::before,
+.hanger-shoulder::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(180deg, #e7c3a0, #b9875f);
+  border-radius: 50%;
+}
+
+.hanger-shoulder::before {
+  left: -4px;
+}
+
+.hanger-shoulder::after {
+  right: -4px;
+}
+
+/* Áo lồng khít vào vai mắc: cổ áo trùm lên thanh vai */
+.garment-card {
+  width: var(--garment-w);
+  /* chiều cao suy ra từ tỉ lệ ảnh đã crop 199x479 */
+  height: calc(var(--garment-w) * 479 / 199);
+  /* kéo lên để vai áo ôm vào thanh vai mắc, không rơi tự do */
+  margin-top: -6px;
+  position: relative;
+  background: transparent;
+  border: none;
+  z-index: 5;
+}
+
+.garment-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  filter:
+    hue-rotate(var(--hue, 0deg)) saturate(var(--sat, 1)) brightness(var(--bri, 1)) drop-shadow(-9px 12px 14px rgba(0, 0, 0, 0.28));
+  transition: filter 0.4s ease;
+}
+
+/* Bóng áo đổ xuống kệ dưới */
+.garment-card::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -22px;
+  width: 84px;
+  height: 15px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(28, 34, 28, 0.28) 0%, rgba(28, 34, 28, 0) 72%);
+  pointer-events: none;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+}
+
+/* ---- Rê chuột: cả dàn mờ đi, chiếc được chạm sáng lên ---- */
+.rack-clothes-wrapper:hover .hanging-item {
+  filter: brightness(0.84) saturate(0.8);
+  opacity: 0.8;
+}
+
+.rack-clothes-wrapper .hanging-item:hover,
+.rack-clothes-wrapper .hanging-item.selected {
+  filter: none;
+  opacity: 1;
+  z-index: 380;
+}
+
+/* Nhấc áo ra khỏi hàng, xoay chính diện */
+.hanging-item:hover,
+.hanging-item.selected {
+  transform: translateY(-16px) translateZ(70px);
+}
+
+.hanging-item:hover .wooden-hanger,
+.hanging-item.selected .wooden-hanger {
+  transform: rotateY(0deg) rotateZ(0deg);
+}
+
+.hanging-item:hover .sway-root,
+.hanging-item.selected .sway-root {
+  animation-play-state: paused;
+}
+
+.hanging-item:hover .garment-card img,
+.hanging-item.selected .garment-card img {
+  filter:
+    hue-rotate(var(--hue, 0deg)) saturate(calc(var(--sat, 1) * 1.08)) brightness(calc(var(--bri, 1) * 1.05)) drop-shadow(0 24px 30px rgba(28, 36, 28, 0.34));
+}
+
+.hanging-item:hover .garment-card::after,
+.hanging-item.selected .garment-card::after {
+  transform: translateX(-50%) scaleX(1.3);
+  opacity: 0.55;
+}
+
+/* Hai bên dạt ra nhường chỗ - như tay gạt áo trên sào thật */
+.hanging-item:hover~.hanging-item,
+.hanging-item.selected~.hanging-item {
+  transform: translateX(30px);
+}
+
+.hanging-item:has(~ .hanging-item:hover),
+.hanging-item:has(~ .hanging-item.selected) {
+  transform: translateX(-22px);
+}
+
+/* Đèn rọi mềm trên chiếc đang ngắm */
+.hanging-item:hover::after,
+.hanging-item.selected::after {
+  content: '';
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 165px;
+  height: 400px;
+  background: radial-gradient(ellipse at top, rgba(255, 246, 219, 0.45) 0%, rgba(255, 255, 255, 0) 68%);
+  pointer-events: none;
+  z-index: -1;
+  animation: spotlightPulse 2.4s infinite alternate;
+}
+
+@keyframes spotlightPulse {
+  0% {
+    opacity: 0.65;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN (TABLET & MOBILE)
+   ========================================== */
+
+.mobile-menu-btn {
+  display: none;
+}
+
+/* TABLET (Max-width: 1024px) */
+@media (max-width: 1024px) {
+  .vyyy-main-layout {
+    flex-direction: column !important;
+    overflow-y: auto !important;
+  }
+
+  .vyyy-right-column {
+    width: 100% !important;
+    padding: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    flex: 1 !important;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Form Checkout Grid 2 Cột Trên Desktop */
+.checkout-form-desktop-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 680px) {
+  .checkout-form-desktop-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Nút Navigation nổi 2 bên dàn sào treo cho Mobile/Tablet */
+.rack-side-nav-btn {
+  display: none;
+  position: absolute;
+  top: 45%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(91, 110, 93, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.rack-side-nav-btn:active {
+  transform: translateY(-50%) scale(0.92);
+}
+
+.rack-side-nav-btn.left {
+  left: 6px;
+}
+
+.rack-side-nav-btn.right {
+  right: 6px;
+}
+
+.mobile-modal-overlay {
+  display: none;
+}
+
+/* MOBILE (Max-width: 768px) */
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .rack-side-nav-btn {
+    display: flex !important;
+  }
+
+  .rack-header-nav {
+    display: none !important;
+  }
+
+  .vyyy-nav-links {
+    display: none !important;
+  }
+
+  .vyyy-header-inner {
+    padding: 0 16px !important;
+    height: 52px !important;
+  }
+
+  .vyyy-heading-logo {
+    font-size: 20px !important;
+  }
+
+  .vyyy-hero-section {
+    padding: 10px 16px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .vyyy-hero-title {
+    font-size: 16px !important;
+  }
+
+  .vyyy-right-column {
+    padding: 12px 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-evenly !important;
+    flex: 1 !important;
+  }
+
+  .vyyy-rack-header-title {
+    margin-bottom: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  /* Sào treo quần áo trên Mobile */
+  .boutique-rack-container {
+    --shoulder-w: 80px;
+    --garment-w: 92px;
+    padding: 16px 8px 40px !important;
+    margin-top: 0 !important;
+  }
+
+  .metallic-hanger-bar {
+    left: 8px;
+    right: 8px;
+  }
+
+  .rack-side-pillar.left {
+    left: 10px;
+  }
+
+  .rack-side-pillar.right {
+    right: 10px;
+  }
+
+  .rack-base-bar {
+    left: 8px;
+    right: 8px;
+  }
+
+  .rack-shelf {
+    left: 16px;
+    right: 16px;
+  }
+
+  .rack-wheel-assembly.left {
+    left: 2px;
+  }
+
+  .rack-wheel-assembly.right {
+    right: 2px;
+  }
+
+  .rack-clothes-wrapper {
+    padding-left: 36px !important;
+    padding-right: 36px !important;
+    min-height: 310px !important;
+  }
+
+  .rack-clothes-wrapper.has-selected {
+    padding-right: 36px !important;
+  }
+
+  .hanging-item {
+    margin-right: -32px !important;
+  }
+
+  /* Overlay phông tối phía sau Popup Modal */
+  .mobile-modal-overlay {
+    display: block !important;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+  }
+
+  /* Popup Modal chi tiết sản phẩm trên Mobile (Trượt mượt lên từ bên dưới) */
+  .vyyy-product-modal {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    max-height: 80vh !important;
+    border-radius: 24px 24px 0 0 !important;
+    z-index: 9999 !important;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.25) !important;
+    animation: slideUpModal 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    padding: 24px 20px 28px !important;
+    border-top: 1px solid var(--accent-terracotta) !important;
+  }
+
+  @keyframes slideUpModal {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Footer Mobile vừa vặn & cân đối */
+  .vyyy-footer {
+    padding: 16px 20px !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+
+  .footer-extra-links {
+    display: none !important;
+  }
+
+  .footer-compact-row {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  .footer-brand-title {
+    font-size: 14px !important;
+  }
+
+  .footer-copyright-text {
+    font-size: 11px !important;
+  }
+}
+
+/* Custom Minimal Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-sage);
+  border-radius: 4px;
+}
+
+/* ==========================================
+   FLYING PARABOLA CART ANIMATION & TOAST
+   ========================================== */
+.flying-cart-item {
+  position: fixed;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(91, 110, 93, 0.4), 0 0 0 2px rgba(184, 122, 92, 0.6);
+  pointer-events: none;
+  z-index: 9999;
+  background: var(--bg-card);
+}
+
+.flying-cart-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Cart Badge Rung Nảy khi nhận sản phẩm */
+@keyframes cartBounce {
+  0% {
+    transform: scale(1);
+  }
+
+  30% {
+    transform: scale(1.22) rotate(-6deg);
+  }
+
+  60% {
+    transform: scale(0.92) rotate(4deg);
+  }
+
+  80% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.cart-badge-bounce {
+  animation: cartBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background-color: rgba(184, 122, 92, 0.2) !important;
+  border-color: var(--accent-terracotta) !important;
+}
+
+/* Toast Notification Sang Trọng (Nàng Thơ Aesthetic) */
+.vyyy-toast-notification {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(251, 249, 245, 0.95);
+  color: var(--text-primary);
+  border: 1px solid var(--accent-terracotta);
+  padding: 14px 22px;
+  border-radius: 16px;
+  box-shadow: 0 14px 35px rgba(91, 110, 93, 0.2), 0 4px 12px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(12px);
+  animation: toastSlideUp 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--font-sans);
+}
+
+.vyyy-toast-notification .toast-text {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+@keyframes toastSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
