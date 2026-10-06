@@ -1,8 +1,75 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, DollarSign, CheckCircle2, Clock, RefreshCw, Search, ArrowLeft, ExternalLink, ShieldCheck, Filter, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+
+// BỘ CUSTOM SVG ICONS THỦ CÔNG PHONG CÁCH "NÀNG THƠ" VYYY BOUTIQUE (KHÔNG DÙNG ICON MẶC ĐỊNH LIBRARIES)
+const IconCrown = () => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z" />
+        <circle cx="12" cy="4" r="1" fill="currentColor" />
+        <circle cx="4" cy="4" r="1" fill="currentColor" />
+        <circle cx="20" cy="4" r="1" fill="currentColor" />
+    </svg>
+);
+
+const IconSilkBag = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <path d="M16 10a4 4 0 0 1-8 0" />
+    </svg>
+);
+
+const IconSparkleStar = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+    </svg>
+);
+
+const IconCoinDiamond = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 3h12l4 6-10 12L2 9z" />
+        <path d="M11 3v18" />
+        <path d="M2 9h20" />
+    </svg>
+);
+
+const IconClockHourglass = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 22h14" />
+        <path d="M5 2h14" />
+        <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" />
+        <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" />
+    </svg>
+);
+
+const IconSearchLens = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+);
+
+const IconRefreshSync = ({ className }: { className?: string }) => (
+    <svg width="15" height="15" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+    </svg>
+);
+
+const IconCheckSeal = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <path d="M9 12l2 2 4-4" />
+    </svg>
+);
+
+const IconBackArrow = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12" />
+        <polyline points="12 19 5 12 12 5" />
+    </svg>
+);
 
 interface OrderItem {
     id: string;
@@ -48,7 +115,6 @@ export default function AdminDashboardPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
-    // Hàm tải dữ liệu đơn hàng realtime từ server
     const fetchOrders = async () => {
         setLoading(true);
         try {
@@ -98,10 +164,10 @@ export default function AdminDashboardPage() {
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#fbf9f5', color: '#3d4a3e', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
 
-            {/* HEADER QUẢN TRỊ THEO DESIGN VIBE "NÀNG THƠ" */}
+            {/* HEADER BOUTIQUE */}
             <header style={{
-                backgroundColor: 'rgba(251, 249, 245, 0.92)',
-                backdropFilter: 'blur(12px)',
+                backgroundColor: 'rgba(251, 249, 245, 0.94)',
+                backdropFilter: 'blur(16px)',
                 borderBottom: '1px solid rgba(91, 110, 93, 0.18)',
                 padding: '20px 40px',
                 display: 'flex',
@@ -111,33 +177,45 @@ export default function AdminDashboardPage() {
                 top: 0,
                 zIndex: 100
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
                     <Link href="/" style={{
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '8px',
                         color: '#5b6e5d',
                         textDecoration: 'none',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        letterSpacing: '0.05em',
-                        padding: '8px 16px',
-                        borderRadius: '20px',
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        letterSpacing: '0.12em',
+                        padding: '8px 18px',
+                        borderRadius: '30px',
                         backgroundColor: '#f3efe6',
-                        border: '1px solid rgba(91, 110, 93, 0.2)',
-                        transition: 'all 0.2s'
+                        border: '1px solid rgba(91, 110, 93, 0.25)',
+                        boxShadow: '0 2px 8px rgba(61, 74, 62, 0.04)'
                     }}>
-                        <ArrowLeft size={14} /> QUAY LẠI CỬA HÀNG
+                        <IconBackArrow /> VỀ CỬA HÀNG
                     </Link>
 
                     <div style={{ height: '28px', width: '1px', backgroundColor: 'rgba(91, 110, 93, 0.2)' }} />
 
-                    <div>
-                        <span style={{ fontFamily: "'Cinzel', serif", fontSize: '18px', fontWeight: 700, letterSpacing: '0.12em', color: '#3d4a3e' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontFamily: "'Cinzel', serif", fontSize: '20px', fontWeight: 700, letterSpacing: '0.14em', color: '#3d4a3e' }}>
                             VYYY BOUTIQUE
                         </span>
-                        <span style={{ fontSize: '10px', fontWeight: 700, color: '#b87a5c', backgroundColor: 'rgba(184, 122, 92, 0.12)', padding: '3px 10px', borderRadius: '12px', marginLeft: '10px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                            ✦ ADMIN DASHBOARD
+                        <span style={{
+                            fontSize: '10px',
+                            fontWeight: 800,
+                            color: '#b87a5c',
+                            backgroundColor: 'rgba(184, 122, 92, 0.12)',
+                            border: '1px solid rgba(184, 122, 92, 0.25)',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            letterSpacing: '0.1em',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                        }}>
+                            <IconSparkleStar /> QUẢN TRỊ VIÊN
                         </span>
                     </div>
                 </div>
@@ -149,18 +227,18 @@ export default function AdminDashboardPage() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px',
-                            padding: '10px 18px',
-                            borderRadius: '20px',
-                            border: '1px solid rgba(91, 110, 93, 0.25)',
+                            padding: '10px 20px',
+                            borderRadius: '30px',
+                            border: '1px solid rgba(91, 110, 93, 0.3)',
                             backgroundColor: '#f3efe6',
                             cursor: 'pointer',
-                            fontSize: '12px',
-                            fontWeight: 700,
+                            fontSize: '11px',
+                            fontWeight: 800,
                             color: '#3d4a3e',
-                            letterSpacing: '0.04em'
+                            letterSpacing: '0.08em'
                         }}
                     >
-                        <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> LÀM MỚI DỮ LIỆU
+                        <IconRefreshSync className={loading ? 'animate-spin' : ''} /> LÀM MỚI DỮ LIỆU
                     </button>
 
                     <a
@@ -171,18 +249,18 @@ export default function AdminDashboardPage() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px',
-                            padding: '10px 20px',
-                            borderRadius: '20px',
+                            padding: '10px 22px',
+                            borderRadius: '30px',
                             backgroundColor: '#5b6e5d',
                             color: '#ffffff',
                             textDecoration: 'none',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            letterSpacing: '0.05em',
-                            boxShadow: '0 4px 14px rgba(91, 110, 93, 0.25)'
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            letterSpacing: '0.08em',
+                            boxShadow: '0 6px 18px rgba(91, 110, 93, 0.28)'
                         }}
                     >
-                        <ExternalLink size={14} /> MỞ SEPAY
+                        <IconCrown /> MỞ SEPAY
                     </a>
                 </div>
             </header>
@@ -190,32 +268,30 @@ export default function AdminDashboardPage() {
             {/* CONTAINER NỘI DUNG MAIN */}
             <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 32px' }}>
 
-                {/* STATS CARDS THEO TÔNG MÀU NÀNG THƠ (SAGE GREEN, TERRACOTTA, CREAM) */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '40px' }}>
+                {/* STATS CARDS CHUẨN BOUTIQUE */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginBottom: '40px' }}>
 
                     {/* REVENUE CARD */}
                     <div style={{
                         backgroundColor: '#f3efe6',
                         borderRadius: '24px',
                         padding: '28px',
-                        border: '1px solid rgba(91, 110, 93, 0.2)',
-                        boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)',
-                        position: 'relative',
-                        overflow: 'hidden'
+                        border: '1px solid rgba(91, 110, 93, 0.22)',
+                        boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#657566' }}>
-                                TỔNG DOANH THU THỰC NHẬN
+                            <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#657566' }}>
+                                DOANH THU THỰC NHẬN
                             </span>
-                            <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'rgba(91, 110, 93, 0.15)', color: '#5b6e5d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <DollarSign size={22} />
+                            <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(91, 110, 93, 0.15)', color: '#5b6e5d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <IconCoinDiamond />
                             </div>
                         </div>
-                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: '32px', fontWeight: 700, color: '#3d4a3e', marginTop: '16px', letterSpacing: '-0.01em' }}>
-                            {stats.totalRevenue.toLocaleString('vi-VN')} <span style={{ fontSize: '20px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600 }}>đ</span>
+                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: '32px', fontWeight: 700, color: '#3d4a3e', marginTop: '18px', letterSpacing: '-0.01em' }}>
+                            {stats.totalRevenue.toLocaleString('vi-VN')} <span style={{ fontSize: '18px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600 }}>đ</span>
                         </div>
-                        <div style={{ fontSize: '12px', color: '#5b6e5d', marginTop: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Sparkles size={14} color="#b87a5c" /> Khớp tiền tự động VietQR SePay
+                        <div style={{ fontSize: '12px', color: '#5b6e5d', marginTop: '10px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ color: '#b87a5c' }}>✦</span> Tự động khớp VietQR SePay
                         </div>
                     </div>
 
@@ -224,22 +300,22 @@ export default function AdminDashboardPage() {
                         backgroundColor: '#f3efe6',
                         borderRadius: '24px',
                         padding: '28px',
-                        border: '1px solid rgba(91, 110, 93, 0.2)',
+                        border: '1px solid rgba(91, 110, 93, 0.22)',
                         boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#657566' }}>
-                                ĐƠN HÀNG ĐÃ THANH TOÁN
+                            <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#657566' }}>
+                                ĐƠN ĐÃ THANH TOÁN
                             </span>
-                            <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'rgba(184, 122, 92, 0.15)', color: '#b87a5c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <CheckCircle2 size={22} />
+                            <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(184, 122, 92, 0.15)', color: '#b87a5c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <IconSilkBag />
                             </div>
                         </div>
-                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: '32px', fontWeight: 700, color: '#3d4a3e', marginTop: '16px' }}>
-                            {stats.paidOrders} <span style={{ fontSize: '15px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, color: '#657566' }}>/ {stats.totalOrders} đơn</span>
+                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: '32px', fontWeight: 700, color: '#3d4a3e', marginTop: '18px' }}>
+                            {stats.paidOrders} <span style={{ fontSize: '16px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, color: '#657566' }}>/ {stats.totalOrders} đơn</span>
                         </div>
-                        <div style={{ fontSize: '12px', color: '#b87a5c', marginTop: '8px', fontWeight: 600 }}>
-                            ✦ Đã sẵn sàng đóng gói & giao hàng
+                        <div style={{ fontSize: '12px', color: '#b87a5c', marginTop: '10px', fontWeight: 700 }}>
+                            ✦ Sẵn sàng xuất kho & đóng gói
                         </div>
                     </div>
 
@@ -248,33 +324,33 @@ export default function AdminDashboardPage() {
                         backgroundColor: '#f3efe6',
                         borderRadius: '24px',
                         padding: '28px',
-                        border: '1px solid rgba(91, 110, 93, 0.2)',
+                        border: '1px solid rgba(91, 110, 93, 0.22)',
                         boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#657566' }}>
-                                ĐƠN CHỜ CHUYỂN KHOẢN
+                            <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#657566' }}>
+                                ĐƠN CHỜ TIỀN VỀ
                             </span>
-                            <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: 'rgba(217, 119, 6, 0.15)', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Clock size={22} />
+                            <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(217, 119, 6, 0.15)', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <IconClockHourglass />
                             </div>
                         </div>
-                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: '32px', fontWeight: 700, color: '#D97706', marginTop: '16px' }}>
-                            {stats.pendingOrders} <span style={{ fontSize: '15px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, color: '#657566' }}>đơn</span>
+                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: '32px', fontWeight: 700, color: '#D97706', marginTop: '18px' }}>
+                            {stats.pendingOrders} <span style={{ fontSize: '16px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, color: '#657566' }}>đơn</span>
                         </div>
-                        <div style={{ fontSize: '12px', color: '#D97706', marginTop: '8px', fontWeight: 600 }}>
-                            ⏳ Lắng nghe Webhook MBBank Realtime
+                        <div style={{ fontSize: '12px', color: '#D97706', marginTop: '10px', fontWeight: 700 }}>
+                            ⏳ Đang lắng nghe Webhook Ngân hàng
                         </div>
                     </div>
 
                 </div>
 
-                {/* TÌM KIẾM & BỘ LỌC ĐƠN HÀNG */}
+                {/* SEARCH & FILTER */}
                 <div style={{
                     backgroundColor: '#f3efe6',
                     borderRadius: '20px',
                     border: '1px solid rgba(91, 110, 93, 0.2)',
-                    padding: '20px 24px',
+                    padding: '20px 28px',
                     marginBottom: '28px',
                     display: 'flex',
                     flexWrap: 'wrap',
@@ -288,37 +364,35 @@ export default function AdminDashboardPage() {
                         alignItems: 'center',
                         gap: '12px',
                         flex: 1,
-                        minWidth: '300px',
+                        minWidth: '320px',
                         backgroundColor: '#fbf9f5',
-                        padding: '10px 18px',
+                        padding: '10px 20px',
                         borderRadius: '30px',
-                        border: '1px solid rgba(91, 110, 93, 0.2)'
+                        border: '1px solid rgba(91, 110, 93, 0.22)'
                     }}>
-                        <Search size={18} color="#94a395" />
+                        <IconSearchLens />
                         <input
                             type="text"
-                            placeholder="Tìm kiếm Mã đơn (VYYY-xxx), Tên nàng thơ, Số điện thoại..."
+                            placeholder="Tìm theo Mã đơn (VYYY-xxx), Tên nàng thơ, Số điện thoại..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '13px', color: '#3d4a3e' }}
                         />
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Filter size={15} color="#657566" />
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#657566', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Lọc:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {['ALL', 'CHO_THANH_TOAN', 'DA_THANH_TOAN', 'HOAN_THANH'].map((st) => (
                             <button
                                 key={st}
                                 onClick={() => setStatusFilter(st)}
                                 style={{
-                                    padding: '8px 16px',
+                                    padding: '8px 18px',
                                     borderRadius: '20px',
                                     border: 'none',
                                     fontSize: '11px',
-                                    fontWeight: 700,
+                                    fontWeight: 800,
                                     cursor: 'pointer',
-                                    letterSpacing: '0.04em',
+                                    letterSpacing: '0.06em',
                                     transition: 'all 0.2s',
                                     backgroundColor: statusFilter === st ? '#5b6e5d' : 'transparent',
                                     color: statusFilter === st ? '#ffffff' : '#657566'
@@ -331,7 +405,7 @@ export default function AdminDashboardPage() {
 
                 </div>
 
-                {/* BẢNG ĐƠN HÀNG PHONG CÁCH BOUTIQUE KHÁCH HÀNG */}
+                {/* BẢNG ĐƠN HÀNG */}
                 <div style={{
                     backgroundColor: '#f3efe6',
                     borderRadius: '24px',
@@ -342,28 +416,26 @@ export default function AdminDashboardPage() {
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
                             <thead>
-                                <tr style={{ backgroundColor: 'rgba(91, 110, 93, 0.08)', borderBottom: '1px solid rgba(91, 110, 93, 0.15)', color: '#5b6e5d', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                                    <th style={{ padding: '20px 24px' }}>Mã Đơn / Thời Gian</th>
-                                    <th style={{ padding: '20px 24px' }}>Thông Tin Nàng Thơ</th>
-                                    <th style={{ padding: '20px 24px' }}>Sản Phẩm Đã Chọn</th>
-                                    <th style={{ padding: '20px 24px' }}>Phương Thức & Giá</th>
-                                    <th style={{ padding: '20px 24px' }}>Trạng Thái Thống Kê</th>
-                                    <th style={{ padding: '20px 24px', textAlign: 'center' }}>Hành Động</th>
+                                <tr style={{ backgroundColor: 'rgba(91, 110, 93, 0.08)', borderBottom: '1px solid rgba(91, 110, 93, 0.18)', color: '#5b6e5d', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                                    <th style={{ padding: '20px 24px' }}>Mã Đơn</th>
+                                    <th style={{ padding: '20px 24px' }}>Thông Tin Khách</th>
+                                    <th style={{ padding: '20px 24px' }}>Sản Phẩm Đặt Mua</th>
+                                    <th style={{ padding: '20px 24px' }}>Phương Thức & Tiền</th>
+                                    <th style={{ padding: '20px 24px' }}>Trạng Thái</th>
+                                    <th style={{ padding: '20px 24px', textAlign: 'center' }}>Hành Động Admin</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredOrders.length === 0 ? (
                                     <tr>
                                         <td colSpan={6} style={{ textAlign: 'center', padding: '60px', color: '#94a395' }}>
-                                            <ShoppingBag size={48} style={{ margin: '0 auto 16px', opacity: 0.4, color: '#5b6e5d' }} />
-                                            <div style={{ fontFamily: "'Cinzel', serif", fontSize: '16px', color: '#3d4a3e' }}>Chưa tìm thấy đơn hàng nào phù hợp</div>
+                                            <div style={{ fontFamily: "'Cinzel', serif", fontSize: '16px', color: '#3d4a3e' }}>Chưa tìm thấy đơn hàng nào</div>
                                         </td>
                                     </tr>
                                 ) : (
                                     filteredOrders.map((order) => (
                                         <tr key={order.id} style={{ borderBottom: '1px solid rgba(91, 110, 93, 0.1)' }}>
 
-                                            {/* Mã đơn */}
                                             <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
                                                 <div style={{ fontFamily: "'Cinzel', serif", fontWeight: 700, color: '#3d4a3e', fontSize: '15px' }}>{order.id}</div>
                                                 <div style={{ fontSize: '11px', color: '#94a395', marginTop: '6px' }}>
@@ -371,10 +443,9 @@ export default function AdminDashboardPage() {
                                                 </div>
                                             </td>
 
-                                            {/* Thông tin khách */}
                                             <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
-                                                <div style={{ fontWeight: 700, color: '#3d4a3e', fontSize: '14px' }}>{order.customerName}</div>
-                                                <div style={{ fontSize: '12px', color: '#b87a5c', fontWeight: 700, marginTop: '2px' }}>{order.phone}</div>
+                                                <div style={{ fontWeight: 800, color: '#3d4a3e', fontSize: '14px' }}>{order.customerName}</div>
+                                                <div style={{ fontSize: '12px', color: '#b87a5c', fontWeight: 800, marginTop: '2px' }}>{order.phone}</div>
                                                 <div style={{ fontSize: '12px', color: '#657566', marginTop: '6px', maxWidth: '240px', lineHeight: '1.4' }}>
                                                     📍 {order.address}
                                                 </div>
@@ -385,7 +456,6 @@ export default function AdminDashboardPage() {
                                                 )}
                                             </td>
 
-                                            {/* Sản phẩm */}
                                             <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
                                                 {order.items.map((item, idx) => (
                                                     <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
@@ -400,30 +470,28 @@ export default function AdminDashboardPage() {
                                                 ))}
                                             </td>
 
-                                            {/* Tổng tiền */}
                                             <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
                                                 <div style={{ fontFamily: "'Cinzel', serif", fontSize: '16px', fontWeight: 700, color: '#b87a5c' }}>
                                                     {order.totalPrice.toLocaleString('vi-VN')} đ
                                                 </div>
                                                 <div style={{ marginTop: '6px' }}>
                                                     {order.paymentMethod === 'VIETQR' ? (
-                                                        <span style={{ fontSize: '10px', fontWeight: 700, backgroundColor: 'rgba(91, 110, 93, 0.15)', color: '#5b6e5d', padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.04em' }}>
+                                                        <span style={{ fontSize: '10px', fontWeight: 800, backgroundColor: 'rgba(91, 110, 93, 0.15)', color: '#5b6e5d', padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.04em' }}>
                                                             ⚡ VIETQR SEPAY
                                                         </span>
                                                     ) : (
-                                                        <span style={{ fontSize: '10px', fontWeight: 700, backgroundColor: 'rgba(101, 117, 102, 0.15)', color: '#657566', padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.04em' }}>
+                                                        <span style={{ fontSize: '10px', fontWeight: 800, backgroundColor: 'rgba(101, 117, 102, 0.15)', color: '#657566', padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.04em' }}>
                                                             💵 THANH TOÁN COD
                                                         </span>
                                                     )}
                                                 </div>
                                             </td>
 
-                                            {/* Trạng thái */}
                                             <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
                                                 {order.status === 'DA_THANH_TOAN' ? (
                                                     <div>
                                                         <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: 'rgba(91, 110, 93, 0.2)', color: '#5b6e5d', padding: '6px 12px', borderRadius: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}>
-                                                            <ShieldCheck size={14} /> ĐÃ THANH TOÁN
+                                                            <IconCheckSeal /> ĐÃ THANH TOÁN
                                                         </span>
                                                         {order.paidAt && (
                                                             <div style={{ fontSize: '10px', color: '#5b6e5d', marginTop: '6px' }}>
@@ -433,7 +501,7 @@ export default function AdminDashboardPage() {
                                                     </div>
                                                 ) : order.status === 'CHO_THANH_TOAN' ? (
                                                     <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: 'rgba(217, 119, 6, 0.15)', color: '#D97706', padding: '6px 12px', borderRadius: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}>
-                                                        <Clock size={14} /> CHỜ CHUYỂN KHOẢN
+                                                        <IconClockHourglass /> CHỜ CHUYỂN KHOẢN
                                                     </span>
                                                 ) : (
                                                     <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: '#fbf9f5', color: '#657566', padding: '6px 12px', borderRadius: '16px' }}>
@@ -442,12 +510,11 @@ export default function AdminDashboardPage() {
                                                 )}
                                             </td>
 
-                                            {/* Hành động */}
                                             <td style={{ padding: '20px 24px', verticalAlign: 'top', textAlign: 'center' }}>
                                                 {order.status === 'CHO_THANH_TOAN' && (
                                                     <button
                                                         onClick={() => handleUpdateStatus(order.id, 'DA_THANH_TOAN')}
-                                                        style={{ padding: '8px 14px', borderRadius: '12px', border: 'none', backgroundColor: '#5b6e5d', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.04em' }}
+                                                        style={{ padding: '8px 16px', borderRadius: '20px', border: 'none', backgroundColor: '#5b6e5d', color: '#fff', fontSize: '11px', fontWeight: 800, cursor: 'pointer', letterSpacing: '0.04em' }}
                                                     >
                                                         Xác nhận đã nhận tiền
                                                     </button>
@@ -455,7 +522,7 @@ export default function AdminDashboardPage() {
                                                 {order.status === 'DA_THANH_TOAN' && (
                                                     <button
                                                         onClick={() => handleUpdateStatus(order.id, 'HOAN_THANH')}
-                                                        style={{ padding: '8px 14px', borderRadius: '12px', border: '1px solid rgba(91, 110, 93, 0.3)', backgroundColor: '#fbf9f5', color: '#5b6e5d', fontSize: '11px', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.04em' }}
+                                                        style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid rgba(91, 110, 93, 0.3)', backgroundColor: '#fbf9f5', color: '#5b6e5d', fontSize: '11px', fontWeight: 800, cursor: 'pointer', letterSpacing: '0.04em' }}
                                                     >
                                                         Hoàn thành ➔
                                                     </button>
