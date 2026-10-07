@@ -456,11 +456,11 @@ export default function AdminDashboardPage() {
                                                 <div style={{ fontWeight: 800, color: '#3d4a3e', fontSize: '14px' }}>{order.customerName}</div>
                                                 <div style={{ fontSize: '12px', color: '#b87a5c', fontWeight: 800, marginTop: '2px' }}>{order.phone}</div>
                                                 <div style={{ fontSize: '12px', color: '#657566', marginTop: '6px', maxWidth: '240px', lineHeight: '1.4' }}>
-                                                    📍 {order.address}
+                                                    {order.address}
                                                 </div>
                                                 {order.note && (
                                                     <div style={{ fontSize: '11px', color: '#b87a5c', fontStyle: 'italic', marginTop: '6px', backgroundColor: 'rgba(184, 122, 92, 0.08)', padding: '4px 8px', borderRadius: '6px' }}>
-                                                        📝 {order.note}
+                                                        {order.note}
                                                     </div>
                                                 )}
                                             </td>
@@ -486,11 +486,11 @@ export default function AdminDashboardPage() {
                                                 <div style={{ marginTop: '6px' }}>
                                                     {order.paymentMethod === 'VIETQR' ? (
                                                         <span style={{ fontSize: '10px', fontWeight: 800, backgroundColor: 'rgba(91, 110, 93, 0.15)', color: '#5b6e5d', padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.04em' }}>
-                                                            ⚡ VIETQR SEPAY
+                                                            VIETQR SEPAY
                                                         </span>
                                                     ) : (
                                                         <span style={{ fontSize: '10px', fontWeight: 800, backgroundColor: 'rgba(101, 117, 102, 0.15)', color: '#657566', padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.04em' }}>
-                                                            💵 THANH TOÁN COD
+                                                            THANH TOÁN COD
                                                         </span>
                                                     )}
                                                 </div>

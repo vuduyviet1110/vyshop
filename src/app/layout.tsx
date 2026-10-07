@@ -1,5 +1,7 @@
 import './globals.css';
 import React from 'react';
+import { AuthSessionProvider } from '@/components/AuthSessionProvider';
+import { ReactQueryProvider } from '@/components/ReactQueryProvider';
 
 export const metadata = {
     title: 'Vyyy Boutique - Nàng Thơ Áo Dài & Thời Trang Thu Đông 2026',
@@ -12,9 +14,13 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="vi">
-            <body>
-                {children}
+        <html lang="vi" suppressHydrationWarning>
+            <body suppressHydrationWarning>
+                <AuthSessionProvider>
+                    <ReactQueryProvider>
+                        {children}
+                    </ReactQueryProvider>
+                </AuthSessionProvider>
             </body>
         </html>
     );

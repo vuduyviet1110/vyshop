@@ -19,6 +19,63 @@
   --font-sans: 'Plus Jakarta Sans', sans-serif;
 }
 
+/* 🌸 THEME: HỒNG NÀNG THƠ (ROSE) */
+[data-theme="rose"] {
+  --bg-main: #fdf8f7;
+  --bg-card: #f9edea;
+  --bg-header: rgba(253, 248, 247, 0.95);
+
+  --text-primary: #5c3b36;
+  --text-secondary: #8c5d55;
+  --text-muted: #b88f87;
+
+  --accent-sage: #b87a5c;
+  --accent-olive: #8c4e36;
+  --accent-terracotta: #d98868;
+  --accent-cream: #fdf8f7;
+
+  --border-light: rgba(184, 122, 92, 0.15);
+  --border-sage: rgba(184, 122, 92, 0.3);
+}
+
+/* 🧱 THEME: ĐẤT NUNG TERRACOTTA */
+[data-theme="terracotta"] {
+  --bg-main: #faf4f0;
+  --bg-card: #f5e6dd;
+  --bg-header: rgba(250, 244, 240, 0.95);
+
+  --text-primary: #4a2818;
+  --text-secondary: #7a462f;
+  --text-muted: #ad7962;
+
+  --accent-sage: #a65233;
+  --accent-olive: #73341b;
+  --accent-terracotta: #c46845;
+  --accent-cream: #faf4f0;
+
+  --border-light: rgba(166, 82, 51, 0.15);
+  --border-sage: rgba(166, 82, 51, 0.3);
+}
+
+/* 🌙 THEME: ĐÊM LUXURY DARK */
+[data-theme="dark"] {
+  --bg-main: #1a221b;
+  --bg-card: #232d24;
+  --bg-header: rgba(26, 34, 27, 0.95);
+
+  --text-primary: #e6ede7;
+  --text-secondary: #a3b8a5;
+  --text-muted: #6e8270;
+
+  --accent-sage: #7c947e;
+  --accent-olive: #9bb59d;
+  --accent-terracotta: #d99677;
+  --accent-cream: #1a221b;
+
+  --border-light: rgba(124, 148, 126, 0.2);
+  --border-sage: rgba(124, 148, 126, 0.4);
+}
+
 html {
   scroll-behavior: smooth;
 }

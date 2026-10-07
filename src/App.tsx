@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ShoppingBag, Menu, ChevronLeft, ChevronRight, QrCode, CreditCard, Banknote, CheckCircle, X } from 'lucide-react';
+import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { ShoppingBag, Menu, ChevronLeft, ChevronRight, QrCode, CreditCard, Banknote, CheckCircle, X, User, ChevronDown, Settings, LogOut, Shield, Heart, Package, MessageCircle, Send, Bot, Sparkles, Layers, LayoutGrid } from 'lucide-react';
 import { RACK_SETS, type Product } from './data';
 import { BANK_CONFIG } from './config/bankConfig';
 
-// Bảng màu một tiệm thật thường bày: tông nhã, cùng một gu, không phải cầu vồng.
-// Mỗi phần tử là độ xoay màu + độ bão hoà áp lên ảnh gốc (áo xanh cobalt).
 const RACK_PALETTE = [
   { hue: 0, sat: 0.9, bri: 1.0 },     // xanh cobalt gốc
   { hue: 28, sat: 0.62, bri: 1.06 },  // xanh tím nhạt
@@ -48,19 +49,36 @@ export interface CartItem {
 }
 
 export const App: React.FC = () => {
-  // State Giỏ hàng & Checkout
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 'default-1',
-      product: RACK_SETS[0].products[0],
-      size: 'M',
-      color: RACK_SETS[0].products[0].colors[0]?.name || 'Mặc định',
-      quantity: 1
-    }
-  ]);
+  // State Giỏ hàng & Checkout (Lưu & đọc từ localStorage)
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+
+  // Khôi phục giỏ hàng từ LocalStorage khi khởi chạy
+  useEffect(() => {
+    try {
+      const savedCart = localStorage.getItem('vyyy_cart');
+      if (savedCart) {
+        setCartItems(JSON.parse(savedCart));
+      }
+    } catch (e) {
+      console.error('Lỗi đọc giỏ hàng:', e);
+    }
+  }, []);
+
+  // Tự động lưu giỏ hàng khi thay đổi
+  const updateCartWithStorage = (newCart: CartItem[] | ((prev: CartItem[]) => CartItem[])) => {
+    setCartItems(prev => {
+      const updated = typeof newCart === 'function' ? newCart(prev) : newCart;
+      try {
+        localStorage.setItem('vyyy_cart', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Lỗi lưu giỏ hàng:', e);
+      }
+      return updated;
+    });
+  };
 
   // Form thanh toán & Phương thức thanh toán
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'VIETQR' | 'CREDIT'>('VIETQR');
@@ -93,7 +111,7 @@ export const App: React.FC = () => {
   // Thêm sản phẩm vào Giỏ Hàng
   const addToCart = (product: Product, size: string, color: string) => {
     const itemKey = `${product.id}-${size}-${color}`;
-    setCartItems(prev => {
+    updateCartWithStorage(prev => {
       const existing = prev.find(item => item.id === itemKey);
       if (existing) {
         return prev.map(item => item.id === itemKey ? { ...item, quantity: item.quantity + 1 } : item);
@@ -104,7 +122,7 @@ export const App: React.FC = () => {
 
   // Cập nhật số lượng sản phẩm trong giỏ
   const updateQuantity = (id: string, delta: number) => {
-    setCartItems(prev => prev.map(item => {
+    updateCartWithStorage(prev => prev.map(item => {
       if (item.id === id) {
         const newQty = item.quantity + delta;
         return newQty > 0 ? { ...item, quantity: newQty } : item;
@@ -115,16 +133,49 @@ export const App: React.FC = () => {
 
   // Xóa sản phẩm khỏi giỏ
   const removeCartItem = (id: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
+    updateCartWithStorage(prev => prev.filter(item => item.id !== id));
   };
 
-  // State quản lý dàn treo hiện tại (Rack Index 0 hoặc 1)
+  // State quản lý dàn treo & API sản phẩm
   const [currentRackIndex, setCurrentRackIndex] = useState(0);
   const [rollingAnimClass, setRollingAnimClass] = useState('');
   const isTransitioningRef = useRef(false);
 
+  // API Infinite Scroll với TanStack Query
+  const [viewMode, setViewMode] = useState<'3d_rack' | 'grid_catalog'>('3d_rack');
   const currentRack = RACK_SETS[currentRackIndex];
-  const productsList = currentRack.products;
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isLoadingProducts
+  } = useInfiniteQuery({
+    queryKey: ['products', currentRack.id],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await fetch(`/api/products?rackId=${currentRack.id}&page=${pageParam}&limit=8`);
+      const json = await res.json();
+      return json;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      return lastPage.pagination.hasNextPage ? lastPage.pagination.page + 1 : undefined;
+    },
+    staleTime: 1000 * 60 * 5, // Cache dữ liệu sản phẩm trong 5 phút
+  });
+
+  // Gộp tất cả các sản phẩm từ các trang đã tải của TanStack Query
+  const apiProducts = data ? data.pages.flatMap(p => p.products || []) : [];
+  const productsList = apiProducts.length > 0 ? apiProducts : currentRack.products;
+
+  // Infinite scroll handler khi cuộn danh sách catalogue xuống gần đáy
+  const handleCatalogScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop <= clientHeight + 100 && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
 
   // State quản lý sản phẩm đang được cầm ra ngắm từ dàn treo
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -160,7 +211,7 @@ export const App: React.FC = () => {
     }
   }, [selectedProduct]);
 
-  // Hàm chuyển đổi giữa 2 Dàn sào treo riêng biệt (Rack 1 <-> Rack 2)
+  // Hàm chuyển đổi giữa các Dàn sào treo (Rack 1 <-> Rack 2)
   const changeRack = (newIndex: number) => {
     if (newIndex === currentRackIndex || isTransitioningRef.current) return;
     isTransitioningRef.current = true;
@@ -196,8 +247,36 @@ export const App: React.FC = () => {
     }
   };
 
+  const { data: session } = useSession();
+  const [mounted, setMounted] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // AI Chatbot State
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string }>>([
+    { sender: 'bot', text: 'Xin chào Nàng Thơ! Em là trợ lý AI Vyyy Boutique. Nàng cần em tư vấn phối đồ, chọn size hay thông tin sản phẩm nào ạ?' },
+  ]);
+
+  useEffect(() => {
+    setMounted(true);
+    const savedTheme = localStorage.getItem('vyyy_theme');
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <div style={{ height: '100vh', width: '100vw', backgroundColor: 'var(--bg-main)', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div suppressHydrationWarning style={{ height: '100vh', width: '100vw', backgroundColor: 'var(--bg-main)', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
       {/* Toast Notification sang trọng khi thêm sản phẩm */}
       {toastMessage && (
@@ -273,6 +352,8 @@ export const App: React.FC = () => {
           ========================================== */}
       <header
         style={{
+          position: 'relative',
+          zIndex: 1000,
           flexShrink: 0,
           backgroundColor: 'var(--bg-header)',
           borderBottom: '1px solid var(--border-sage)',
@@ -310,6 +391,186 @@ export const App: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {session?.user ? (
+              <div ref={userMenuRef} style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    backgroundColor: 'rgba(91, 110, 93, 0.12)',
+                    border: '1px solid var(--accent-sage)',
+                    color: 'var(--accent-sage)',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    letterSpacing: '0.08em',
+                    cursor: 'pointer',
+                    outline: 'none',
+                  }}
+                >
+                  <User size={14} color="var(--accent-sage)" />
+                  <span>{(session.user.name || session.user.email || 'NÀNG THƠ').toUpperCase()}</span>
+                  <ChevronDown size={13} style={{ transition: 'transform 0.2s ease', transform: isUserMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                </button>
+
+                {isUserMenuOpen && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 8px)',
+                    right: 0,
+                    width: '210px',
+                    backgroundColor: 'var(--bg-card)',
+                    borderRadius: '16px',
+                    border: '1px solid var(--border-sage)',
+                    boxShadow: '0 12px 30px rgba(0,0,0,0.15)',
+                    padding: '8px',
+                    zIndex: 1050,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                  }}>
+                    <Link
+                      href="/profile?tab=orders"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        textDecoration: 'none',
+                        color: 'var(--text-primary)',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        transition: 'background-color 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(91, 110, 93, 0.1)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <Package size={15} color="var(--accent-sage)" /> LỊCH SỬ ĐƠN HÀNG
+                    </Link>
+
+                    <Link
+                      href="/profile?tab=wishlist"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        textDecoration: 'none',
+                        color: 'var(--text-primary)',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        transition: 'background-color 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(184, 122, 92, 0.1)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <Heart size={15} color="var(--accent-terracotta)" /> DANH SÁCH YÊU THÍCH
+                    </Link>
+
+                    <Link
+                      href="/profile?tab=settings"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        textDecoration: 'none',
+                        color: 'var(--text-primary)',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        transition: 'background-color 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(91, 110, 93, 0.1)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <Settings size={15} color="var(--accent-sage)" /> CẤU HÌNH & THEME
+                    </Link>
+
+                    {(session.user as any)?.role === 'ADMIN' && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        style={{
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          textDecoration: 'none',
+                          color: 'var(--accent-terracotta)',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          transition: 'background-color 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(184, 122, 92, 0.1)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <Shield size={15} color="var(--accent-terracotta)" /> QUẢN TRỊ ADMIN
+                      </Link>
+                    )}
+
+                    <div style={{ height: '1px', backgroundColor: 'var(--border-sage)', margin: '4px 0' }} />
+
+                    <button
+                      type="button"
+                      onClick={() => signOut({ callbackUrl: '/' })}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        color: 'var(--accent-terracotta)',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        width: '100%',
+                        transition: 'background-color 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(184, 122, 92, 0.1)'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <LogOut size={15} color="var(--accent-terracotta)" /> ĐĂNG XUẤT
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <a
+                href="/auth/login"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  borderRadius: '20px',
+                  backgroundColor: 'rgba(184, 122, 92, 0.1)',
+                  border: '1px solid var(--accent-terracotta)',
+                  textDecoration: 'none',
+                  color: 'var(--accent-terracotta)',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                }}
+              >
+                <User size={14} color="var(--accent-terracotta)" />
+                <span>ĐĂNG NHẬP</span>
+              </a>
+            )}
+
             <div
               id="cart-header-badge"
               className={isCartBouncing ? 'cart-badge-bounce' : ''}
@@ -648,9 +909,11 @@ export const App: React.FC = () => {
                       setTimeout(() => {
                         setIsVerifyingQR(false);
                         setCheckoutSuccess(true);
+                        updateCartWithStorage([]);
                       }, 1800);
                     } else {
                       setCheckoutSuccess(true);
+                      updateCartWithStorage([]);
                     }
                   }}
                   className="checkout-form-desktop-grid"
@@ -914,15 +1177,57 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* HERO BANNER RESPONSIVE */}
-      <section className="vyyy-hero-section" style={{ padding: '10px 24px', borderBottom: '1px solid var(--border-sage)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* HERO BANNER RESPONSIVE & THANH ĐIỀU HƯỚNG BỘ SƯU TẬP */}
+      <section className="vyyy-hero-section" style={{ padding: '10px 24px', borderBottom: '1px solid var(--border-sage)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <span className="vyyy-subheading" style={{ color: 'var(--accent-terracotta)', fontWeight: 700, fontSize: '10px' }}>BỘ SƯU TẬP THU ĐÔNG 2026</span>
-          <h2 className="vyyy-heading gold-gradient-text vyyy-hero-title" style={{ fontSize: '20px', marginTop: '2px' }}>ÁO TRENCH COAT</h2>
+          <h2 className="vyyy-heading gold-gradient-text vyyy-hero-title" style={{ fontSize: '18px', marginTop: '2px' }}>{currentRack.title}</h2>
         </div>
-        <span style={{ fontSize: '11px', background: 'rgba(91,110,93,0.1)', color: 'var(--accent-sage)', padding: '4px 12px', borderRadius: '12px', fontWeight: 700 }}>
-          {productsList.length} MẪU TREO SÀO
-        </span>
+
+        {/* NÚT CHUYỂN ĐỔI GIAO DIỆN & TRANG (PAGINATION) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Nút chuyển giữa 3D Rack & Grid Catalog */}
+          <div style={{ display: 'flex', backgroundColor: 'rgba(91,110,93,0.12)', borderRadius: '20px', padding: '3px' }}>
+            <button
+              onClick={() => setViewMode('3d_rack')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '16px',
+                border: 'none',
+                fontSize: '11px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                backgroundColor: viewMode === '3d_rack' ? 'var(--accent-sage)' : 'transparent',
+                color: viewMode === '3d_rack' ? '#fff' : 'var(--accent-sage)',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Layers size={14} /> DÀN SÀO 3D
+            </button>
+            <button
+              onClick={() => setViewMode('grid_catalog')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '16px',
+                border: 'none',
+                fontSize: '11px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                backgroundColor: viewMode === 'grid_catalog' ? 'var(--accent-sage)' : 'transparent',
+                color: viewMode === 'grid_catalog' ? '#fff' : 'var(--accent-sage)',
+                transition: 'all 0.2s'
+              }}
+            >
+              <LayoutGrid size={14} /> LƯỚI CATALOGUE
+            </button>
+          </div>
+        </div>
       </section>
 
       {/* ==========================================
@@ -1071,8 +1376,47 @@ export const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* HÀNH ĐỘNG MUA HÀNG */}
-                <div style={{ paddingTop: '14px', borderTop: '1px solid var(--border-sage)' }}>
+                {/* HÀNH ĐỘNG MUA HÀNG VÀ YÊU THÍCH */}
+                <div style={{ paddingTop: '14px', borderTop: '1px solid var(--border-sage)', display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const itemToSave = {
+                        id: selectedProduct.id,
+                        name: selectedProduct.name,
+                        price: selectedProduct.price.toLocaleString('vi-VN') + 'đ',
+                        image: selectedProduct.image,
+                        category: selectedProduct.category || 'Áo Dài Premium'
+                      };
+
+                      try {
+                        await fetch('/api/wishlist', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(itemToSave)
+                        });
+                      } catch (e) {
+                        console.error('Lỗi lưu wishlist vào Database:', e);
+                      }
+                      setToastMessage(`Đã thêm "${selectedProduct.name}" vào Danh Sách Yêu Thích 💖`);
+                    }}
+                    style={{
+                      padding: '14px',
+                      backgroundColor: 'rgba(184, 122, 92, 0.1)',
+                      border: '1px solid var(--accent-terracotta)',
+                      borderRadius: '12px',
+                      color: 'var(--accent-terracotta)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s ease',
+                    }}
+                    title="Thêm vào danh sách yêu thích"
+                  >
+                    <Heart size={18} />
+                  </button>
+
                   <button
                     onClick={(e) => {
                       const btnRect = e.currentTarget.getBoundingClientRect();
@@ -1124,7 +1468,7 @@ export const App: React.FC = () => {
                       };
                     }}
                     style={{
-                      width: '100%',
+                      flex: 1,
                       padding: '14px',
                       backgroundColor: 'var(--accent-sage)',
                       color: '#ffffff',
@@ -1154,133 +1498,351 @@ export const App: React.FC = () => {
         {/* CỘT BÊN PHẢI: DÀN TREO ÁO VÀ QUẦN (FULL 100% WIDTH BAN ĐẦU, THU LẠI 58% KHI CÓ ITEM ĐƯỢC CHỌN TRÊN DESKTOP) */}
         <div
           className="vyyy-right-column"
-          onWheel={handleWheelOnRack}
+          onWheel={viewMode === '3d_rack' ? handleWheelOnRack : undefined}
           style={{
             width: selectedProduct ? '58%' : '100%',
             padding: selectedProduct ? '32px 36px' : '40px 64px',
-            transition: 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)'
+            transition: 'all 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: viewMode === 'grid_catalog' ? 'hidden' : undefined
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--border-sage)', paddingBottom: '14px' }}>
-            <div>
-              <span className="vyyy-subheading" style={{ fontSize: '13px', fontWeight: 800, color: 'var(--accent-sage)', display: 'block' }}>
-                {currentRack.title}
-              </span>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Cuộn chuột hoặc nhấn nút ◀ ▶ hai bên để đổi dàn sào treo khác • Click item để xem chi tiết
-              </p>
-            </div>
+          {/* CHẾ ĐỘ 1: DÀN TREO QUẦN ÁO SẮT ĐEN 3D (3D RACK) */}
+          {viewMode === '3d_rack' ? (
+            <>
+              {/* Tiêu đề sub-header chỉ hiển thị khi ở 3D Rack */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid var(--border-sage)', paddingBottom: '12px' }}>
+                <div>
+                  <span className="vyyy-subheading" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--accent-sage)', display: 'block' }}>
+                    {currentRack.subtitle}
+                  </span>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    Cuộn chuột hoặc nhấn nút ◀ ▶ hai bên để đổi dàn sào treo khác • Click item để xem chi tiết
+                  </p>
+                </div>
 
-            {/* Nút điều hướng chuyển Dàn sào treo ◀ ▶ (Desktop Header Controls) */}
-            <div className="rack-header-nav" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <button
-                onClick={() => changeRack(currentRackIndex === 0 ? RACK_SETS.length - 1 : currentRackIndex - 1)}
-                style={{ background: 'var(--bg-card)', border: '1px solid var(--border-sage)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                title="Sào treo trước"
-              >
-                <ChevronLeft size={16} color="var(--accent-sage)" />
-              </button>
-              <span style={{ fontSize: '11px', background: 'rgba(91,110,93,0.1)', color: 'var(--accent-sage)', padding: '6px 14px', borderRadius: '16px', fontWeight: 700 }}>
-                DÀN SÀO {currentRackIndex + 1}/{RACK_SETS.length} ({productsList.length} MẪU)
-              </span>
-              <button
-                onClick={() => changeRack(currentRackIndex === RACK_SETS.length - 1 ? 0 : currentRackIndex + 1)}
-                style={{ background: 'var(--bg-card)', border: '1px solid var(--border-sage)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                title="Sào treo tiếp theo"
-              >
-                <ChevronRight size={16} color="var(--accent-sage)" />
-              </button>
-            </div>
-          </div>
+                <div className="rack-header-nav" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    onClick={() => changeRack(currentRackIndex === 0 ? RACK_SETS.length - 1 : currentRackIndex - 1)}
+                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border-sage)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    title="Sào treo trước"
+                  >
+                    <ChevronLeft size={16} color="var(--accent-sage)" />
+                  </button>
+                  <span style={{ fontSize: '11px', background: 'rgba(91,110,93,0.1)', color: 'var(--accent-sage)', padding: '6px 14px', borderRadius: '16px', fontWeight: 700 }}>
+                    DÀN SÀO {currentRackIndex + 1}/{RACK_SETS.length} ({productsList.length} MẪU)
+                  </span>
+                  <button
+                    onClick={() => changeRack(currentRackIndex === RACK_SETS.length - 1 ? 0 : currentRackIndex + 1)}
+                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border-sage)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    title="Sào treo tiếp theo"
+                  >
+                    <ChevronRight size={16} color="var(--accent-sage)" />
+                  </button>
+                </div>
+              </div>
 
-          {/* DÀN TREO QUẦN ÁO SẮT ĐEN CÓ BÁNH XE XOAY (BLACK INDUSTRIAL WHEELED RACK) */}
-          <div className={`boutique-rack-container ${rollingAnimClass}`} style={{ padding: selectedProduct ? '40px 24px 60px' : '50px 40px 70px' }}>
-            {/* Nút Navigation nổi 2 bên dàn treo cho Mobile swipe & chạm nhanh */}
-            <button
-              className="rack-side-nav-btn left"
-              onClick={() => changeRack(currentRackIndex === 0 ? RACK_SETS.length - 1 : currentRackIndex - 1)}
-              title="Dàn sào trước"
+              <div className={`boutique-rack-container ${rollingAnimClass}`} style={{ padding: selectedProduct ? '40px 24px 60px' : '50px 40px 70px' }}>
+                <button
+                  className="rack-side-nav-btn left"
+                  onClick={() => changeRack(currentRackIndex === 0 ? RACK_SETS.length - 1 : currentRackIndex - 1)}
+                  title="Dàn sào trước"
+                >
+                  <ChevronLeft size={20} color="#ffffff" />
+                </button>
+                <button
+                  className="rack-side-nav-btn right"
+                  onClick={() => changeRack(currentRackIndex === RACK_SETS.length - 1 ? 0 : currentRackIndex + 1)}
+                  title="Dàn sào tiếp"
+                >
+                  <ChevronRight size={20} color="#ffffff" />
+                </button>
+
+                <div className="metallic-hanger-bar" />
+                <div className="rack-side-pillar left" />
+                <div className="rack-side-pillar right" />
+                <div className="rack-base-bar" />
+                <div className="rack-shelf upper" />
+                <div className="rack-shelf lower" />
+
+                <div className="rack-wheel-assembly left">
+                  <div className="rack-caster-wheel" />
+                  <div className="rack-caster-wheel" />
+                </div>
+
+                <div className="rack-wheel-assembly right">
+                  <div className="rack-caster-wheel" />
+                  <div className="rack-caster-wheel" />
+                </div>
+
+                <div className={`rack-clothes-wrapper ${selectedProduct ? 'has-selected' : ''}`}>
+                  {productsList.map((product, index) => {
+                    const isSelected = selectedProduct?.id === product.id;
+                    const look = garmentLook(product.id, index);
+
+                    return (
+                      <div
+                        key={product.id}
+                        ref={(el) => { itemRefs.current[product.id] = el; }}
+                        className={`hanging-item ${isSelected ? 'selected' : ''}`}
+                        style={{
+                          '--i': index,
+                          '--tilt': `${look.tilt}deg`,
+                          '--hue': `${look.hue}deg`,
+                          '--sat': look.sat,
+                          '--bri': look.bri
+                        } as React.CSSProperties}
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setSelectedColorIndex(0);
+                          setSelectedSize(product.sizes[0] || 'S');
+                        }}
+                      >
+                        <div className="sway-root">
+                          <div className="wooden-hanger">
+                            <div className="hanger-hook" />
+                            <div className="hanger-shoulder" />
+                            <div className="garment-card">
+                              <img src={product.image} alt={product.name} draggable={false} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          ) : (
+            /* CHẾ ĐỘ 2: LƯỚI CATALOGUE (SHOPEE/AMAZON STYLE - INFINITE SCROLL) - ĐÃ XÓA SUB-HEADER THỪA */
+            <div
+              onScroll={handleCatalogScroll}
+              style={{ flex: 1, overflowY: 'auto', maxHeight: 'calc(100vh - 120px)', padding: '16px 24px 60px', backgroundColor: 'var(--bg-main)' }}
             >
-              <ChevronLeft size={20} color="#ffffff" />
-            </button>
-            <button
-              className="rack-side-nav-btn right"
-              onClick={() => changeRack(currentRackIndex === RACK_SETS.length - 1 ? 0 : currentRackIndex + 1)}
-              title="Dàn sào tiếp"
-            >
-              <ChevronRight size={20} color="#ffffff" />
-            </button>
-
-            {/* Thanh sào ngang sắt đen */}
-            <div className="metallic-hanger-bar" />
-
-            {/* 2 Cột đứng sắt đen ở 2 bên */}
-            <div className="rack-side-pillar left" />
-            <div className="rack-side-pillar right" />
-
-            {/* Thanh sắt cân bằng đáy */}
-            <div className="rack-base-bar" />
-
-            {/* 2 tầng kệ lưới sắt phía dưới */}
-            <div className="rack-shelf upper" />
-            <div className="rack-shelf lower" />
-
-            {/* Cụm Bánh Xe Cao Su Chân Sào Bên Trái */}
-            <div className="rack-wheel-assembly left">
-              <div className="rack-caster-wheel" />
-              <div className="rack-caster-wheel" />
-            </div>
-
-            {/* Cụm Bánh Xe Cao Su Chân Sào Bên Phải */}
-            <div className="rack-wheel-assembly right">
-              <div className="rack-caster-wheel" />
-              <div className="rack-caster-wheel" />
-            </div>
-
-            {/* Các sản phẩm đang treo dọc trên sào */}
-            <div className={`rack-clothes-wrapper ${selectedProduct ? 'has-selected' : ''}`}>
-              {productsList.map((product, index) => {
-                const isSelected = selectedProduct?.id === product.id;
-                const look = garmentLook(product.id, index);
-
-                return (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '20px' }}>
+                {productsList.map((product) => (
                   <div
                     key={product.id}
-                    ref={(el) => { itemRefs.current[product.id] = el; }}
-                    className={`hanging-item ${isSelected ? 'selected' : ''}`}
-                    style={{
-                      '--i': index,
-                      '--tilt': `${look.tilt}deg`,
-                      '--hue': `${look.hue}deg`,
-                      '--sat': look.sat,
-                      '--bri': look.bri
-                    } as React.CSSProperties}
                     onClick={() => {
                       setSelectedProduct(product);
                       setSelectedColorIndex(0);
                       setSelectedSize(product.sizes[0] || 'S');
                     }}
+                    style={{
+                      backgroundColor: 'var(--bg-card)',
+                      borderRadius: '16px',
+                      border: '1px solid var(--border-sage)',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
+                      transition: 'all 0.25s ease'
+                    }}
+                    className="hover:-translate-y-1"
                   >
-                    {/* Lớp đung đưa nhẹ quanh điểm móc vắt lên sào */}
-                    <div className="sway-root">
-                      {/* Móc treo lồng trực tiếp với Áo Dài thành 1 khối duy nhất */}
-                      <div className="wooden-hanger">
-                        <div className="hanger-hook" />
-                        <div className="hanger-shoulder" />
-
-                        {/* Áo Dài móc trực tiếp dưới vai gỗ */}
-                        <div className="garment-card">
-                          <img src={product.image} alt={product.name} draggable={false} />
-                        </div>
+                    <div style={{ position: 'relative', paddingTop: '130%', overflow: 'hidden' }}>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                      <span style={{ position: 'absolute', top: '10px', left: '10px', backgroundColor: 'var(--accent-sage)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '3px 8px', borderRadius: '10px' }}>
+                        {product.tag}
+                      </span>
+                    </div>
+                    <div style={{ padding: '14px' }}>
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 6px 0', lineHeight: '1.4' }}>{product.name}</h4>
+                      <div style={{ fontSize: '14px', fontWeight: 900, color: 'var(--accent-terracotta)' }}>
+                        {product.price.toLocaleString('vi-VN')} đ
                       </div>
                     </div>
                   </div>
-                );
-              })}
+                ))}
+              </div>
+
+              {/* Indicator Tải Thêm Sản Phẩm Mới (Infinite Loading) */}
+              {isLoadingProducts && (
+                <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--accent-sage)', fontWeight: 700, fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <span style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid var(--accent-sage)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                  Đang tải thêm sản phẩm Haute Couture...
+                </div>
+              )}
+
+              {!hasNextPage && productsList.length > 0 && (
+                <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-muted)', fontSize: '11px', fontWeight: 600 }}>
+                  ✨ Bạn đã xem hết tất cả mẫu thiết kế trong bộ sưu tập này ✨
+                </div>
+              )}
             </div>
-          </div>
+          )}
         </div>
 
+      </div>
+
+      {/* ==========================================
+          AI CHATBOT CONSULTANT WIDGET (TƯ VẤN NÀNG THƠ)
+          ========================================== */}
+      <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9000 }}>
+        {!isChatOpen ? (
+          <button
+            type="button"
+            onClick={() => setIsChatOpen(true)}
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              backgroundColor: 'var(--accent-sage)',
+              color: '#ffffff',
+              border: 'none',
+              boxShadow: '0 8px 24px rgba(91, 110, 93, 0.4)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'transform 0.2s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            <MessageCircle size={26} />
+          </button>
+        ) : (
+          <div style={{
+            width: '360px',
+            height: '480px',
+            backgroundColor: 'var(--bg-card)',
+            borderRadius: '20px',
+            border: '1px solid var(--border-sage)',
+            boxShadow: '0 16px 40px rgba(0,0,0,0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}>
+            {/* Header Chatbot */}
+            <div style={{
+              padding: '14px 18px',
+              backgroundColor: 'var(--accent-sage)',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Bot size={20} />
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 800 }}>TƯ VẤN NÀNG THƠ AI</h4>
+                  <span style={{ fontSize: '10px', opacity: 0.9 }}>Hỗ trợ phối đồ & chọn Size 24/7</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsChatOpen(false)}
+                style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Messages Body */}
+            <div style={{
+              flex: 1,
+              padding: '16px',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              backgroundColor: 'rgba(255,255,255,0.4)',
+            }}>
+              {chatMessages.map((msg, index) => (
+                <div
+                  key={index}
+                  style={{
+                    alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                    maxWidth: '82%',
+                    padding: '10px 14px',
+                    borderRadius: msg.sender === 'user' ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
+                    backgroundColor: msg.sender === 'user' ? 'var(--accent-sage)' : '#ffffff',
+                    color: msg.sender === 'user' ? '#ffffff' : 'var(--text-primary)',
+                    fontSize: '12px',
+                    lineHeight: '1.5',
+                    border: msg.sender === 'user' ? 'none' : '1px solid var(--border-sage)',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+                  }}
+                >
+                  {msg.text}
+                </div>
+              ))}
+            </div>
+
+            {/* Input Footer */}
+            <div style={{ padding: '12px', borderTop: '1px solid var(--border-sage)', backgroundColor: '#ffffff', display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                placeholder="Hỏi AI tư vấn phối đồ, chọn size..."
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    if (!chatInput.trim()) return;
+                    const userMsg = chatInput;
+                    setChatMessages((prev) => [...prev, { sender: 'user', text: userMsg }]);
+                    setChatInput('');
+
+                    setTimeout(() => {
+                      let botReply = 'Cảm ơn nàng đã đặt câu hỏi! Chuyên viên Nàng Thơ AI đề xuất bạn nên chọn các mẫu Áo Dài Lụa Tơ Tằm dáng chuẩn thu đông này nhé. Nàng có muốn tham khảo bảng size không ạ?';
+                      if (userMsg.toLowerCase().includes('size') || userMsg.toLowerCase().includes('đo')) {
+                        botReply = 'Bảng size Vyyy Boutique: Size S (40-48kg), Size M (49-55kg), Size L (56-62kg). Nàng có thể báo chiều cao cân nặng để AI tư vấn chuẩn nhất!';
+                      } else if (userMsg.toLowerCase().includes('giá') || userMsg.toLowerCase().includes('nhiêu')) {
+                        botReply = 'Các thiết kế Áo Dài & Trench Coat tại Vyyy Boutique đang có mức giá ưu đãi từ 1,500,000đ đến 3,400,000đ cao cấp ạ.';
+                      }
+                      setChatMessages((prev) => [...prev, { sender: 'bot', text: botReply }]);
+                    }, 800);
+                  }
+                }}
+                style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border-sage)',
+                  fontSize: '12px',
+                  outline: 'none',
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (!chatInput.trim()) return;
+                  const userMsg = chatInput;
+                  setChatMessages((prev) => [...prev, { sender: 'user', text: userMsg }]);
+                  setChatInput('');
+
+                  setTimeout(() => {
+                    let botReply = 'Cảm ơn nàng đã đặt câu hỏi! Chuyên viên Nàng Thơ AI đề xuất bạn nên chọn các mẫu Áo Dài Lụa Tơ Tằm dáng chuẩn thu đông này nhé. Nàng có muốn tham khảo bảng size không ạ?';
+                    if (userMsg.toLowerCase().includes('size') || userMsg.toLowerCase().includes('đo')) {
+                      botReply = 'Bảng size Vyyy Boutique: Size S (40-48kg), Size M (49-55kg), Size L (56-62kg). Nàng có thể báo chiều cao cân nặng để AI tư vấn chuẩn nhất!';
+                    } else if (userMsg.toLowerCase().includes('giá') || userMsg.toLowerCase().includes('nhiêu')) {
+                      botReply = 'Các thiết kế Áo Dài & Trench Coat tại Vyyy Boutique đang có mức giá ưu đãi từ 1,500,000đ đến 3,400,000đ cao cấp ạ.';
+                    }
+                    setChatMessages((prev) => [...prev, { sender: 'bot', text: botReply }]);
+                  }, 800);
+                }}
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: '12px',
+                  backgroundColor: 'var(--accent-sage)',
+                  color: '#ffffff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Send size={16} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ==========================================
@@ -1311,7 +1873,7 @@ export const App: React.FC = () => {
           <a href="#contact" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>LIÊN HỆ</a>
         </div>
       </footer>
-    </div>
+    </div >
   );
 }
 
