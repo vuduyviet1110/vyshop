@@ -9,7 +9,7 @@ import { formatVND } from '@/lib/format';
 const groqApiKey = process.env.GROQ_API_KEY || '';
 const groq = new Groq({ apiKey: groqApiKey });
 const DEFAULT_MODEL = process.env.GROQ_MODEL || 'qwen/qwen3.8-27b';
-const CANDIDATE_MODELS = Array.from(new Set([DEFAULT_MODEL, 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b', 'groq/compound-mini', 'groq/compound']));
+const CANDIDATE_MODELS = Array.from(new Set([DEFAULT_MODEL, 'qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b']));
 
 const ORDER_KEYWORDS = [
     'đơn hàng', 'đơn', 'mua hàng', 'giao hàng', 'vận chuyển',
@@ -190,6 +190,12 @@ ${extraContextText ? `\n${extraContextText}\n` : ''}`;
 
         let completion: any = null;
         let lastErr: any = null;
+
+        if (!groqApiKey) {
+            return NextResponse.json({
+                reply: 'Chức năng AI Chat chưa được cấu hình API Key (GROQ_API_KEY). Nàng/Quản trị viên vui lòng thêm GROQ_API_KEY vào tệp môi trường .env nhé!',
+            }, { status: 200 });
+        }
 
         for (const modelCandidate of CANDIDATE_MODELS) {
             try {

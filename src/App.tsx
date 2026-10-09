@@ -396,7 +396,16 @@ export const App: React.FC = () => {
               <Menu size={20} color="var(--text-primary)" />
             </button>
 
-            <h1 className="vyyy-heading gold-gradient-text vyyy-heading-logo" style={{ fontSize: '22px', letterSpacing: '0.18em', fontWeight: 900 }}>
+            <h1
+              className="vyyy-heading gold-gradient-text vyyy-heading-logo"
+              onClick={() => {
+                setViewMode('3d_rack');
+                setCurrentRackIndex(0);
+                setSelectedProduct(null);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              style={{ fontSize: '22px', letterSpacing: '0.18em', fontWeight: 900, cursor: 'pointer', userSelect: 'none' }}
+            >
               VYYY
             </h1>
 
@@ -671,7 +680,25 @@ export const App: React.FC = () => {
                 transition: 'all 0.2s'
               }}
             >
-              <Layers size={14} /> SÀO 3D
+              <Layers size={14} /> BST
+              <span
+                style={{
+                  backgroundColor: viewMode === '3d_rack' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(184, 122, 92, 0.15)',
+                  color: viewMode === '3d_rack' ? '#ffffff' : 'var(--accent-terracotta)',
+                  fontSize: '8px',
+                  fontWeight: 700,
+                  padding: '1px 6px',
+                  borderRadius: '10px',
+                  lineHeight: '1.4',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  border: viewMode === '3d_rack' ? '1px solid rgba(255, 255, 255, 0.4)' : '1px solid rgba(184, 122, 92, 0.3)',
+                  backdropFilter: 'blur(4px)',
+                  marginLeft: '2px'
+                }}
+              >
+                NEW
+              </span>
             </button>
             <button
               onClick={() => setViewMode('grid_catalog')}
