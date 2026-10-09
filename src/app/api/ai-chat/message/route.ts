@@ -40,6 +40,21 @@ export async function POST(req: NextRequest) {
         const trimmedMessage = message.trim().slice(0, 500);
 
         const user = session?.user;
+
+        // Rate Limit cho khách chưa đăng nhập (GUEST RATE LIMIT: Tối đa 3 câu hỏi)
+        if (!user) {
+            const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'guest_unknown';
+            const guestCountCookie = req.cookies.get('vyyy_ai_guest_count')?.value;
+            const currentCount = guestCountCookie ? parseInt(guestCountCookie, 10) : 0;
+
+            if (currentCount >= 3) {
+                return NextResponse.json({
+                    reply: '**Nàng chưa đăng nhập!** Để tiếp tục, Nàng vui lòng [Đăng nhập](/auth/login) tài khoản Vyyy Boutique nhé ạ! ',
+                    limitReached: true,
+                }, { status: 429 });
+            }
+        }
+
         const rawRole = (user as { role?: string })?.role || 'USER';
         const role = normalizeRole(rawRole);
         const isAdminUser = rawRole === 'ADMIN' || role === 'admin';
@@ -238,12 +253,20 @@ ${extraContextText ? `\n${extraContextText}\n` : ''}`;
             },
         });
 
+        const resHeaders: Record<string, string> = {
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Cache-Control': 'no-cache, no-transform',
+            'Connection': 'keep-alive',
+        };
+
+        if (!user) {
+            const guestCountCookie = req.cookies.get('vyyy_ai_guest_count')?.value;
+            const newCount = (guestCountCookie ? parseInt(guestCountCookie, 10) : 0) + 1;
+            resHeaders['Set-Cookie'] = `vyyy_ai_guest_count=${newCount}; Path=/; Max-Age=86400; SameSite=Lax`;
+        }
+
         return new Response(stream, {
-            headers: {
-                'Content-Type': 'text/event-stream; charset=utf-8',
-                'Cache-Control': 'no-cache, no-transform',
-                'Connection': 'keep-alive',
-            },
+            headers: resHeaders,
         });
     } catch (error: any) {
         console.error('AI Chat Error:', error);
