@@ -2,19 +2,22 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useSession, signOut } from 'next-auth/react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { ShoppingBag, Menu, User, ChevronDown, Settings, LogOut, Shield, Heart, Package, Layers, LayoutGrid } from 'lucide-react';
+import { ShoppingBag, Menu, User, ChevronDown, Settings, LogOut, Shield, Layers, LayoutGrid } from 'lucide-react';
 import type { Product, Rack, CartItem } from './types/product';
-import { BANK_CONFIG } from './config/bankConfig';
-import { AiChatbot } from './components/AiChatbot';
 import { ContactDock } from './components/ContactDock';
-import { CartDrawer } from './components/store/CartDrawer';
-import { CheckoutModal, type PaymentMethod, type CustomerInfo } from './components/store/CheckoutModal';
-import { ProductModal } from './components/store/ProductModal';
+import type { PaymentMethod } from './components/store/CheckoutModal';
 import { Rack3D } from './components/store/Rack3D';
 import { CatalogGrid } from './components/store/CatalogGrid';
 import { StoreFooter } from './components/store/StoreFooter';
+
+// Các khối chỉ xuất hiện khi người dùng tương tác -> tách chunk để giảm JS thực thi lúc tải trang (TBT)
+const AiChatbot = dynamic(() => import('./components/AiChatbot').then((m) => m.AiChatbot), { ssr: false });
+const CartDrawer = dynamic(() => import('./components/store/CartDrawer').then((m) => m.CartDrawer), { ssr: false });
+const CheckoutModal = dynamic(() => import('./components/store/CheckoutModal').then((m) => m.CheckoutModal), { ssr: false });
+const ProductModal = dynamic(() => import('./components/store/ProductModal').then((m) => m.ProductModal), { ssr: false });
 
 export const App: React.FC = () => {
   // State Giỏ hàng & Checkout (Lưu & đọc từ localStorage)
@@ -354,6 +357,7 @@ export const App: React.FC = () => {
               <span className="vyyy-heading gold-gradient-text" style={{ fontSize: '20px', fontWeight: 900, letterSpacing: '0.1em' }}>VYYY BOUTIQUE</span>
               <button
                 onClick={() => setMobileMenuOpen(false)}
+                aria-label="Đóng menu"
                 style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-primary)', padding: '4px' }}
               >
                 ✕
@@ -397,12 +401,18 @@ export const App: React.FC = () => {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
               className="mobile-menu-btn"
+              aria-label="Mở menu điều hướng"
+              aria-expanded={mobileMenuOpen}
             >
               <Menu size={20} color="var(--text-primary)" />
             </button>
 
             <h1
               className="vyyy-heading gold-gradient-text vyyy-heading-logo"
+              role="link"
+              tabIndex={0}
+              aria-label="VYYY Boutique - về trang chủ"
+              onKeyDown={(e) => { if (e.key === 'Enter') (e.currentTarget as HTMLElement).click(); }}
               onClick={() => {
                 setViewMode('3d_rack');
                 setCurrentRackIndex(0);
@@ -582,8 +592,10 @@ export const App: React.FC = () => {
               </a>
             )}
 
-            <div
+            <button
+              type="button"
               id="cart-header-badge"
+              aria-label={`Giỏ hàng, ${cartCount} sản phẩm`}
               className={isCartBouncing ? 'cart-badge-bounce' : ''}
               onClick={() => setIsCartOpen(true)}
               style={{
@@ -599,11 +611,11 @@ export const App: React.FC = () => {
                 whiteSpace: 'nowrap'
               }}
             >
-              <ShoppingBag size={15} color="var(--accent-sage)" />
+              <ShoppingBag size={15} color="var(--accent-sage)" aria-hidden="true" />
               <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--accent-sage)' }}>
                 GIỎ HÀNG <span className="vyyy-btn-text-mobile">({cartCount})</span>
               </span>
-            </div>
+            </button>
           </div>
         </div>
       </header>
@@ -670,6 +682,7 @@ export const App: React.FC = () => {
           <div style={{ display: 'flex', backgroundColor: 'rgba(91,110,93,0.12)', borderRadius: '20px', padding: '3px' }}>
             <button
               onClick={() => setViewMode('3d_rack')}
+              aria-pressed={viewMode === '3d_rack'}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -707,6 +720,7 @@ export const App: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode('grid_catalog')}
+              aria-pressed={viewMode === 'grid_catalog'}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
