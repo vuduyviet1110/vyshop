@@ -168,9 +168,9 @@ function LoginForm() {
                         <Mail size={13} color="var(--accent-sage)" /> ĐỊA CHỈ EMAIL *
                     </label>
                     <input
-                        type="email"
+                        type="text"
                         required
-                        placeholder="nangtho@vyyy.vn"
+                        placeholder="admin hoặc email@domain.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         style={{

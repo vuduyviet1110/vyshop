@@ -15,8 +15,8 @@
   --border-light: rgba(91, 110, 93, 0.15);
   --border-sage: rgba(91, 110, 93, 0.3);
 
-  --font-serif: 'Cinzel', serif;
-  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-serif: var(--font-heading), 'Playfair Display', Georgia, serif;
+  --font-sans: var(--font-body), 'Be Vietnam Pro', system-ui, sans-serif;
 }
 
 /* 🌸 THEME: HỒNG NÀNG THƠ (ROSE) */
@@ -84,6 +84,13 @@ html {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 body {
@@ -235,8 +242,7 @@ body {
    ========================================== */
 .boutique-rack-container {
   --bar-top: 46px;
-  --hook-h: 22px;
-  --shoulder-w: 96px;
+  --shoulder-w: 100px;
   --garment-w: 110px;
 
   background: transparent;
@@ -366,12 +372,111 @@ body {
   overflow: hidden;
 }
 
+/* ---- Diện mạo thật cho khung sào: ống thép sơn tĩnh điện đen, chi tiết đồng thau, kệ gỗ sồi, bánh xe có càng ---- */
+:root {
+  --tube-v: linear-gradient(90deg, #060607 0%, #3d4145 16%, #9ba0a4 27%, #4a4e52 40%, #17191b 66%, #050506 88%, #1f2224 100%);
+  --tube-h: linear-gradient(180deg, #1c1e20 0%, #8e9397 20%, #c3c7ca 29%, #4a4e52 44%, #121315 70%, #040405 100%);
+  --brass: radial-gradient(circle at 34% 28%, #fff1c2 0%, #d9b45c 38%, #8f6a22 78%, #5a4112 100%);
+}
+
+.metallic-hanger-bar {
+  background: var(--tube-h);
+  border-radius: 7px;
+  box-shadow: 0 9px 14px -4px rgba(20, 24, 20, 0.38), 0 1px 0 rgba(255, 255, 255, 0.25) inset;
+}
+
+.metallic-hanger-bar::before,
+.metallic-hanger-bar::after {
+  background: var(--brass);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.45), inset -2px -3px 4px rgba(60, 38, 5, 0.45);
+}
+
+.rack-side-pillar {
+  background: var(--tube-v);
+  box-shadow: 6px 0 12px -3px rgba(20, 24, 20, 0.35);
+}
+
+/* khớp nối đồng thau ở đầu & chân cột */
+.rack-side-pillar::before,
+.rack-side-pillar::after {
+  content: '';
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #6e5019 0%, #e6c677 30%, #fff0c0 42%, #b48a35 64%, #5e4414 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.rack-side-pillar::before {
+  top: 14px;
+}
+
+.rack-side-pillar::after {
+  bottom: 4px;
+}
+
+.rack-base-bar {
+  background: var(--tube-h);
+  box-shadow: 0 8px 12px -4px rgba(20, 24, 20, 0.4);
+}
+
+/* kệ gỗ sồi để giày, túi: vân gỗ + cạnh sáng phía trên */
+.rack-shelf {
+  height: 12px;
+  border-radius: 3px;
+  background:
+    repeating-linear-gradient(92deg, rgba(95, 58, 28, 0.16) 0 1px, rgba(0, 0, 0, 0) 1px 9px),
+    linear-gradient(180deg, #e8c99a 0%, #c99a63 30%, #a97544 78%, #6f4724 100%);
+  box-shadow: 0 7px 12px -3px rgba(20, 24, 20, 0.4), 0 1px 0 rgba(255, 255, 255, 0.45) inset;
+}
+
+/* bánh xe: càng thép + lốp cao su + trục chrome + bóng đổ xuống sàn */
+.rack-wheel-assembly::after {
+  content: '';
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  bottom: -5px;
+  height: 11px;
+  background: radial-gradient(ellipse at center, rgba(15, 18, 15, 0.42) 0%, rgba(15, 18, 15, 0) 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.rack-caster-wheel {
+  overflow: visible;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background:
+    radial-gradient(circle at 50% 50%, #d5d9dc 0 3px, #5b6064 4px 6px, rgba(0, 0, 0, 0) 7px),
+    radial-gradient(circle at 36% 32%, #55595c 0%, #1b1d1f 58%, #060607 100%);
+  box-shadow: 0 5px 8px rgba(0, 0, 0, 0.45), inset 0 0 0 2px #0a0a0b;
+}
+
+.rack-caster-wheel::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -11px;
+  width: 16px;
+  height: 16px;
+  transform: translateX(-50%);
+  border-radius: 3px 3px 7px 7px;
+  background: linear-gradient(90deg, #17191b 0%, #7d8286 35%, #26292b 100%);
+  z-index: -1;
+}
+
 /* ---- Dàn áo treo trên sào ---- */
 .rack-clothes-wrapper {
   display: flex;
   align-items: flex-start;
-  /* đẩy đỉnh móc lên đúng mép trên thanh sào: móc vắt qua sào */
-  padding: calc(var(--bar-top) - var(--hook-h) + 4px) 54px 0;
+  /* tâm vòng móc (10% bề ngang mắc) trùng tâm thanh sào (cao 13px) */
+  padding: calc(var(--bar-top) + 6.5px - var(--shoulder-w) * 0.1 - var(--pad-top, 0px)) 54px 0;
+  /* ít áo: dồn vào giữa sào; nhiều áo: tràn thì cuộn từ mép trái */
+  justify-content: safe center;
   position: relative;
   min-height: 400px;
   overflow-x: auto;
@@ -399,9 +504,8 @@ body {
 .hanging-item {
   position: relative;
   flex: 0 0 auto;
-  width: var(--shoulder-w);
-  /* chồng lấn: áo trái che một phần áo phải, như sào thật */
-  margin-right: -40px;
+  /* bước nhảy giữa hai áo do JS tính theo số lượng (--pitch); nhỏ hơn bề ngang áo thì tự chồng lấn */
+  width: var(--pitch, 78px);
   cursor: pointer;
   transform-origin: 50% 6px;
   transform-style: preserve-3d;
@@ -410,13 +514,23 @@ body {
   z-index: calc(300 - var(--i));
   transition:
     transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.4s ease,
     filter 0.4s ease,
     opacity 0.4s ease;
 }
 
+/* Chỉ ô áo (rộng bằng --pitch, không chồng lấn, không dịch chuyển) nhận chuột:
+   áo nhấc lên/dạt ra không làm con trỏ rơi ra khỏi ô nên không bị nháy hover */
+.hanging-item * {
+  pointer-events: none;
+}
+
 /* Lớp đung đưa quanh điểm móc vắt lên sào */
 .hanging-item .sway-root {
-  transform-origin: 50% 5px;
+  width: var(--shoulder-w);
+  margin: 0 auto;
+  transform-origin: 50% calc(var(--shoulder-w) * 0.1);
+  transition: translate 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   animation: hangerSway 5.4s ease-in-out infinite alternate;
   animation-delay: calc(var(--i) * -0.41s);
   transform-style: preserve-3d;
@@ -447,67 +561,21 @@ body {
   position: relative;
   transform-style: preserve-3d;
   transform: rotateY(-24deg) rotateZ(var(--tilt, -2deg));
-  transform-origin: 50% 5px;
+  transform-origin: 50% calc(var(--shoulder-w) * 0.1);
   transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Cần móc kim loại vắt qua thanh sào */
-.hanger-hook {
-  width: 13px;
-  height: var(--hook-h);
-  margin-bottom: -2px;
-  border: 2px solid #b9bec3;
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
-  background: transparent;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
-  /* nổi lên trước thanh sào -> thấy rõ móc quàng qua */
-  position: relative;
-  z-index: 410;
-}
-
-/* Cổ mắc nối cần móc xuống vai */
-.wooden-hanger::before {
-  content: '';
-  width: 13px;
-  height: 11px;
-  background: linear-gradient(180deg, #e9cbac 0%, #c9986f 100%);
-  border-radius: 3px 3px 2px 2px;
-  margin-bottom: -2px;
-  z-index: 6;
-}
-
-/* Vai mắc gỗ - vồng nhẹ hai đầu như mắc thật */
-.hanger-shoulder {
-  width: var(--shoulder-w);
-  height: 9px;
-  background: linear-gradient(180deg, #f2dac1 0%, #d9ad86 58%, #b9875f 100%);
-  border-radius: 10px 10px 7px 7px / 10px 10px 5px 5px;
-  box-shadow:
-    0 3px 7px rgba(0, 0, 0, 0.3),
-    inset 0 1px 2px rgba(255, 255, 255, 0.65);
-  position: relative;
-  z-index: 6;
-}
-
-/* hai đầu vai mắc hơi trễ xuống */
-.hanger-shoulder::before,
-.hanger-shoulder::after {
-  content: '';
+/* Mắc + móc vẽ bằng SVG, nằm sau áo: chỉ lộ cổ mắc và vòng móc quàng qua sào */
+.hanger-svg {
   position: absolute;
-  top: 2px;
-  width: 8px;
-  height: 8px;
-  background: linear-gradient(180deg, #e7c3a0, #b9875f);
-  border-radius: 50%;
-}
-
-.hanger-shoulder::before {
-  left: -4px;
-}
-
-.hanger-shoulder::after {
-  right: -4px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  z-index: 2;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
 }
 
 /* Áo lồng khít vào vai mắc: cổ áo trùm lên thanh vai */
@@ -516,7 +584,7 @@ body {
   /* chiều cao suy ra từ tỉ lệ ảnh đã crop 199x479 */
   height: calc(var(--garment-w) * 479 / 199);
   /* kéo lên để vai áo ôm vào thanh vai mắc, không rơi tự do */
-  margin-top: -6px;
+  margin-top: calc(var(--shoulder-w) * 0.26);
   position: relative;
   background: transparent;
   border: none;
@@ -532,6 +600,33 @@ body {
   filter:
     hue-rotate(var(--hue, 0deg)) saturate(var(--sat, 1)) brightness(var(--bri, 1)) drop-shadow(-9px 12px 14px rgba(0, 0, 0, 0.28));
   transition: filter 0.4s ease;
+}
+
+/* Điểm đánh giá nhỏ dưới chân áo */
+.rack-rating-pill {
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border-sage);
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.rack-rating-pill small {
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 /* Bóng áo đổ xuống kệ dưới */
@@ -562,9 +657,9 @@ body {
 }
 
 /* Nhấc áo ra khỏi hàng, xoay chính diện */
-.hanging-item:hover,
-.hanging-item.selected {
-  transform: translateY(-16px) translateZ(70px);
+.hanging-item:hover .sway-root,
+.hanging-item.selected .sway-root {
+  translate: 0 -16px 70px;
 }
 
 .hanging-item:hover .wooden-hanger,
@@ -590,14 +685,14 @@ body {
 }
 
 /* Hai bên dạt ra nhường chỗ - như tay gạt áo trên sào thật */
-.hanging-item:hover~.hanging-item,
-.hanging-item.selected~.hanging-item {
-  transform: translateX(30px);
+.hanging-item:hover~.hanging-item .sway-root,
+.hanging-item.selected~.hanging-item .sway-root {
+  translate: 30px 0 0;
 }
 
-.hanging-item:has(~ .hanging-item:hover),
-.hanging-item:has(~ .hanging-item.selected) {
-  transform: translateX(-22px);
+.hanging-item:has(~ .hanging-item:hover) .sway-root,
+.hanging-item:has(~ .hanging-item.selected) .sway-root {
+  translate: -22px 0 0;
 }
 
 /* Đèn rọi mềm trên chiếc đang ngắm */
@@ -779,9 +874,10 @@ body {
 
   /* Sào treo quần áo trên Mobile */
   .boutique-rack-container {
-    --shoulder-w: 80px;
+    --shoulder-w: 82px;
     --garment-w: 92px;
     padding: 16px 8px 40px !important;
+    --pad-top: 16px !important;
     margin-top: 0 !important;
   }
 
@@ -826,10 +922,6 @@ body {
     padding-right: 36px !important;
   }
 
-  .hanging-item {
-    margin-right: -32px !important;
-  }
-
   /* Overlay phông tối phía sau Popup Modal */
   .mobile-modal-overlay {
     display: block !important;
@@ -871,27 +963,32 @@ body {
 
   /* Footer Mobile vừa vặn & cân đối */
   .vyyy-footer {
-    padding: 16px 20px !important;
+    padding: 10px 16px !important;
+    flex-wrap: wrap !important;
     flex-direction: row !important;
     justify-content: space-between !important;
     align-items: center !important;
   }
 
+  /* Mobile vẫn giữ link chính sách / hotline (thu nhỏ, tự xuống dòng) */
   .footer-extra-links {
-    display: none !important;
+    gap: 4px 12px !important;
+    font-size: 10px !important;
+    padding-right: 56px; /* chừa chỗ cho bong bóng chat AI */
   }
 
   .footer-compact-row {
     width: 100% !important;
-    justify-content: space-between !important;
+    justify-content: flex-start !important;
   }
 
   .footer-brand-title {
     font-size: 14px !important;
   }
 
+  /* bản quyền + pháp nhân dài: ẩn trên mobile cho footer gọn, link chính sách vẫn còn */
   .footer-copyright-text {
-    font-size: 11px !important;
+    display: none !important;
   }
 }
 
@@ -995,4 +1092,69 @@ body {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* ==========================================
+   SKELETON LOADING
+   ========================================== */
+.skeleton {
+  border-radius: 8px;
+  background: linear-gradient(100deg, rgba(91, 110, 93, 0.10) 30%, rgba(91, 110, 93, 0.22) 50%, rgba(91, 110, 93, 0.10) 70%);
+  background-size: 220% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+}
+
+/* Áo giả trên sào: hình dáng áo dài đơn giản (tay + thân + quần) */
+.skeleton-garment {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  clip-path: polygon(40% 0, 60% 0, 66% 5%, 96% 12%, 98% 44%, 90% 45%, 86% 24%, 80% 48%, 86% 70%, 80% 70%, 78% 100%, 54% 100%, 50% 74%, 46% 100%, 22% 100%, 20% 70%, 14% 70%, 20% 48%, 14% 24%, 10% 45%, 2% 44%, 4% 12%, 34% 5%);
+}
+
+.hanging-item.skeleton-item {
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+.hanging-item.skeleton-item .sway-root {
+  animation: none;
+}
+
+.rack-state-message {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 40%;
+  text-align: center;
+  z-index: 20;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.rack-state-message button {
+  margin-top: 10px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--accent-sage);
+  background: transparent;
+  color: var(--accent-sage);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.contact-dock-btn:hover {
+  transform: translateY(-2px) scale(1.06);
 }

@@ -4,8 +4,8 @@ import { prisma } from '../../../lib/prisma';
 // API Endpoint: GET /api/orders -> Lấy danh sách toàn bộ đơn hàng & Thống kê từ Database (Supabase/Neon)
 export async function GET() {
     try {
-        // Nếu đã cấu hình DATABASE_URL -> Lấy từ Supabase / Neon PostgreSQL qua Prisma
-        if (process.env.DATABASE_URL) {
+        // Nếu đã cấu hình DATABASE_URL -> Lấy từ / Neon PostgreSQL qua Prisma
+        {
             const dbOrders = await prisma.order.findMany({
                 include: { items: true },
                 orderBy: { createdAt: 'desc' }
@@ -42,8 +42,7 @@ export async function GET() {
 
             return NextResponse.json({
                 success: true,
-                source: 'POSTGRESQL_PRISMA',
-                stats: {
+                                stats: {
                     totalRevenue,
                     pendingOrders,
                     paidOrders,
@@ -52,25 +51,6 @@ export async function GET() {
                 orders: formattedOrders
             });
         }
-
-        // Fallback: Sử dụng dữ liệu tạm thời nếu chưa điền DATABASE_URL vào .env.local
-        const mockOrders = globalThis.__VYYY_ORDERS_LIST__ || [];
-        const totalRevenue = mockOrders
-            .filter(o => o.status === 'DA_THANH_TOAN' || o.status === 'HOAN_THANH')
-            .reduce((sum, o) => sum + o.totalPrice, 0);
-
-        return NextResponse.json({
-            success: true,
-            source: 'IN_MEMORY_FALLBACK',
-            stats: {
-                totalRevenue,
-                pendingOrders: mockOrders.filter(o => o.status === 'CHO_THANH_TOAN').length,
-                paidOrders: mockOrders.filter(o => o.status === 'DA_THANH_TOAN').length,
-                totalOrders: mockOrders.length
-            },
-            orders: mockOrders
-        });
-
     } catch (error) {
         console.error('❌ [API ORDERS GET ERROR]:', error);
         return NextResponse.json({ success: false, message: 'Lỗi tải đơn hàng', details: String(error) }, { status: 500 });
@@ -83,58 +63,50 @@ export async function POST(request: Request) {
         const newOrderData = await request.json();
         const orderCode = `VYYY-${Math.floor(100000 + Math.random() * 900000)}`;
 
-        if (process.env.DATABASE_URL) {
-            const createdDbOrder = await prisma.order.create({
-                data: {
-                    orderCode,
-                    customerName: newOrderData.customerName,
-                    phone: newOrderData.phone,
-                    address: newOrderData.address,
-                    note: newOrderData.note || '',
-                    totalPrice: newOrderData.totalPrice,
-                    paymentMethod: newOrderData.paymentMethod,
-                    status: newOrderData.status || 'CHO_THANH_TOAN',
-                    items: {
-                        create: newOrderData.items.map((item: any) => ({
-                            productName: item.productName,
-                            size: item.size,
-                            color: item.color,
-                            quantity: item.quantity,
-                            price: item.price,
-                            image: item.image
-                        }))
-                    }
-                },
-                include: { items: true }
-            });
-
-            return NextResponse.json({
-                success: true,
-                source: 'POSTGRESQL_PRISMA',
-                order: {
-                    ...createdDbOrder,
-                    id: createdDbOrder.orderCode
-                }
-            });
+        const rawItems: { productId?: string; size: string; color: string; quantity: number }[] =
+            Array.isArray(newOrderData.items) ? newOrderData.items : [];
+        if (rawItems.length === 0) {
+            return NextResponse.json({ success: false, message: 'Giỏ hàng trống' }, { status: 400 });
+        }
+        if (rawItems.some((i) => !i.productId || !Number.isInteger(i.quantity) || i.quantity < 1 || i.quantity > 99)) {
+            return NextResponse.json({ success: false, message: 'Dữ liệu giỏ hàng không hợp lệ' }, { status: 400 });
         }
 
-        // Fallback in-memory
-        const newOrder = {
-            id: orderCode,
-            ...newOrderData,
-            status: newOrderData.status || 'CHO_THANH_TOAN',
-            createdAt: new Date().toISOString()
-        };
+        // Giá, tên, ảnh luôn lấy từ database: không tin số tiền do trình duyệt gửi lên
+        const products = await prisma.product.findMany({
+            where: { id: { in: rawItems.map((i) => i.productId as string) } },
+        });
+        const byId = new Map(products.map((p) => [p.id, p]));
+        const missing = rawItems.find((i) => !byId.has(i.productId as string));
+        if (missing) {
+            return NextResponse.json({ success: false, message: 'Có sản phẩm trong giỏ không còn bán, vui lòng tải lại trang' }, { status: 409 });
+        }
 
-        if (!globalThis.__VYYY_ORDERS_LIST__) globalThis.__VYYY_ORDERS_LIST__ = [];
-        globalThis.__VYYY_ORDERS_LIST__.unshift(newOrder);
+        const items = rawItems.map((i) => {
+            const p = byId.get(i.productId as string)!;
+            return { productName: p.name, size: i.size, color: i.color, quantity: i.quantity, price: p.price, image: p.image };
+        });
+        const totalPrice = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-        if (!globalThis.__VYYY_ORDERS__) globalThis.__VYYY_ORDERS__ = {};
-        globalThis.__VYYY_ORDERS__[newOrder.phone] = newOrder;
-        globalThis.__VYYY_ORDERS__[orderCode] = newOrder;
+        const createdDbOrder = await prisma.order.create({
+            data: {
+                orderCode,
+                customerName: newOrderData.customerName,
+                phone: newOrderData.phone,
+                address: newOrderData.address,
+                note: newOrderData.note || '',
+                totalPrice,
+                paymentMethod: newOrderData.paymentMethod,
+                status: newOrderData.status || 'CHO_THANH_TOAN',
+                items: { create: items },
+            },
+            include: { items: true },
+        });
 
-        return NextResponse.json({ success: true, source: 'IN_MEMORY_FALLBACK', order: newOrder });
-
+        return NextResponse.json({
+            success: true,
+            order: { ...createdDbOrder, id: createdDbOrder.orderCode },
+        });
     } catch (error) {
         console.error('❌ [API ORDERS POST ERROR]:', error);
         return NextResponse.json({ success: false, message: 'Lỗi tạo đơn hàng' }, { status: 500 });
@@ -146,7 +118,7 @@ export async function PATCH(request: Request) {
     try {
         const { orderId, status } = await request.json();
 
-        if (process.env.DATABASE_URL) {
+        {
             const updatedOrder = await prisma.order.update({
                 where: { orderCode: orderId },
                 data: {
@@ -156,18 +128,6 @@ export async function PATCH(request: Request) {
             });
             return NextResponse.json({ success: true, source: 'POSTGRESQL_PRISMA', order: updatedOrder });
         }
-
-        // Fallback in-memory
-        const mockOrders = globalThis.__VYYY_ORDERS_LIST__ || [];
-        const targetOrder = mockOrders.find(o => o.id === orderId);
-        if (targetOrder) {
-            targetOrder.status = status;
-            if (status === 'DA_THANH_TOAN') targetOrder.paidAt = new Date().toISOString();
-            return NextResponse.json({ success: true, source: 'IN_MEMORY_FALLBACK', order: targetOrder });
-        }
-
-        return NextResponse.json({ success: false, message: 'Không tìm thấy đơn hàng' }, { status: 404 });
-
     } catch (error) {
         return NextResponse.json({ success: false, message: 'Lỗi cập nhật đơn hàng' }, { status: 500 });
     }

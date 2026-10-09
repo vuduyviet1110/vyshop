@@ -2,74 +2,23 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import {
+    Crown,
+    ShoppingBag,
+    Sparkles,
+    Gem,
+    Hourglass,
+    Search,
+    RotateCw,
+    ShieldCheck,
+    ArrowLeft,
+    Package,
+    Shirt,
+    Pin
+} from 'lucide-react';
+import { formatVND } from '@/lib/format';
 
-// BỘ CUSTOM SVG ICONS THỦ CÔNG PHONG CÁCH "NÀNG THƠ" VYYY BOUTIQUE (KHÔNG DÙNG ICON MẶC ĐỊNH LIBRARIES)
-const IconCrown = () => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z" />
-        <circle cx="12" cy="4" r="1" fill="currentColor" />
-        <circle cx="4" cy="4" r="1" fill="currentColor" />
-        <circle cx="20" cy="4" r="1" fill="currentColor" />
-    </svg>
-);
 
-const IconSilkBag = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-        <line x1="3" y1="6" x2="21" y2="6" />
-        <path d="M16 10a4 4 0 0 1-8 0" />
-    </svg>
-);
-
-const IconSparkleStar = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-    </svg>
-);
-
-const IconCoinDiamond = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 3h12l4 6-10 12L2 9z" />
-        <path d="M11 3v18" />
-        <path d="M2 9h20" />
-    </svg>
-);
-
-const IconClockHourglass = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M5 22h14" />
-        <path d="M5 2h14" />
-        <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" />
-        <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" />
-    </svg>
-);
-
-const IconSearchLens = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-);
-
-const IconRefreshSync = ({ className }: { className?: string }) => (
-    <svg width="15" height="15" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
-    </svg>
-);
-
-const IconCheckSeal = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        <path d="M9 12l2 2 4-4" />
-    </svg>
-);
-
-const IconBackArrow = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="19" y1="12" x2="5" y2="12" />
-        <polyline points="12 19 5 12 12 5" />
-    </svg>
-);
 
 interface OrderItem {
     id: string;
@@ -115,10 +64,132 @@ export default function AdminDashboardPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('ALL');
+    const [activeTab, setActiveTab] = useState<'ORDERS' | 'PRODUCTS' | 'RACKS'>('ORDERS');
+
+    // Admin Products & Racks State
+    const [racks, setRacks] = useState<any[]>([]);
+    const [products, setProducts] = useState<any[]>([]);
+    const [savingProductRackId, setSavingProductRackId] = useState<string | null>(null);
+
+    // New Rack Form State
+    const [newRackId, setNewRackId] = useState('');
+    const [newRackTitle, setNewRackTitle] = useState('');
+    const [newRackSubtitle, setNewRackSubtitle] = useState('');
+    const [creatingRack, setCreatingRack] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    const fetchAdminProducts = async () => {
+        try {
+            const res = await fetch('/api/admin/products');
+            const data = await res.json();
+            if (data.success) {
+                setRacks(data.racks);
+                setProducts(data.products);
+            }
+        } catch (err) {
+            console.error('Lỗi tải danh sách sản phẩm quản trị:', err);
+        }
+    };
+
+    const handleAssignRack = async (productId: string, newRackId: string) => {
+        setSavingProductRackId(productId);
+        try {
+            const res = await fetch('/api/admin/products', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId, rackId: newRackId === 'NONE' ? null : newRackId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                fetchAdminProducts();
+            }
+        } catch (err) {
+            console.error('Lỗi gắn dàn sào:', err);
+        } finally {
+            setSavingProductRackId(null);
+        }
+    };
+
+    const handleCreateRack = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newRackId || !newRackTitle) return;
+        setCreatingRack(true);
+        try {
+            const res = await fetch('/api/admin/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: newRackId,
+                    title: newRackTitle,
+                    subtitle: newRackSubtitle || 'BST Mới'
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setNewRackId('');
+                setNewRackTitle('');
+                setNewRackSubtitle('');
+                fetchAdminProducts();
+            } else {
+                alert(data.message);
+            }
+        } catch (err) {
+            console.error('Lỗi tạo dàn sào:', err);
+        } finally {
+            setCreatingRack(false);
+        }
+    };
+
+    const handleDeleteRack = async (rackId: string) => {
+        if (!confirm(`Bạn có chắc chắn muốn xóa Dàn sào "${rackId}"? Tất cả sản phẩm thuộc dàn sào này sẽ tự động về trạng thái "Chưa gắn sào".`)) return;
+        try {
+            const res = await fetch(`/api/admin/products?rackId=${rackId}`, {
+                method: 'DELETE'
+            });
+            const data = await res.json();
+            if (data.success) {
+                fetchAdminProducts();
+            }
+        } catch (err) {
+            console.error('Lỗi xóa dàn sào:', err);
+        }
+    };
+
+    // Editing Rack State
+    const [editingRackId, setEditingRackId] = useState<string | null>(null);
+    const [editRackTitle, setEditRackTitle] = useState('');
+    const [editRackSubtitle, setEditRackSubtitle] = useState('');
+    const [updatingRack, setUpdatingRack] = useState(false);
+
+    const handleUpdateRack = async (rackId: string) => {
+        if (!editRackTitle.trim()) return;
+        setUpdatingRack(true);
+        try {
+            const res = await fetch('/api/admin/products', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    rackId,
+                    title: editRackTitle,
+                    subtitle: editRackSubtitle
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setEditingRackId(null);
+                fetchAdminProducts();
+            } else {
+                alert(data.message);
+            }
+        } catch (err) {
+            console.error('Lỗi cập nhật Dàn sào:', err);
+        } finally {
+            setUpdatingRack(false);
+        }
+    };
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -138,6 +209,7 @@ export default function AdminDashboardPage() {
 
     useEffect(() => {
         fetchOrders();
+        fetchAdminProducts();
         const interval = setInterval(fetchOrders, 8000);
         return () => clearInterval(interval);
     }, []);
@@ -171,7 +243,7 @@ export default function AdminDashboardPage() {
     }
 
     return (
-        <div suppressHydrationWarning style={{ minHeight: '100vh', backgroundColor: '#fbf9f5', color: '#3d4a3e', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div suppressHydrationWarning style={{ minHeight: '100vh', backgroundColor: '#fbf9f5', color: '#3d4a3e', fontFamily: "var(--font-body), 'Be Vietnam Pro', sans-serif" }}>
 
             {/* HEADER BOUTIQUE */}
             <header style={{
@@ -202,13 +274,13 @@ export default function AdminDashboardPage() {
                         border: '1px solid rgba(91, 110, 93, 0.25)',
                         boxShadow: '0 2px 8px rgba(61, 74, 62, 0.04)'
                     }}>
-                        <IconBackArrow /> VỀ CỬA HÀNG
+                        <ArrowLeft size={14} /> VỀ CỬA HÀNG
                     </Link>
 
                     <div style={{ height: '28px', width: '1px', backgroundColor: 'rgba(91, 110, 93, 0.2)' }} />
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontFamily: "'Cinzel', serif", fontSize: '20px', fontWeight: 700, letterSpacing: '0.14em', color: '#3d4a3e' }}>
+                        <span style={{ fontFamily: "var(--font-body), 'Be Vietnam Pro', sans-serif", fontSize: '20px', fontWeight: 700, letterSpacing: '0.14em', color: '#3d4a3e' }}>
                             VYYY BOUTIQUE
                         </span>
                         <span style={{
@@ -224,7 +296,7 @@ export default function AdminDashboardPage() {
                             alignItems: 'center',
                             gap: '6px'
                         }}>
-                            <IconSparkleStar /> QUẢN TRỊ VIÊN
+                            <Sparkles size={14} /> QUẢN TRỊ VIÊN
                         </span>
                     </div>
                 </div>
@@ -242,12 +314,11 @@ export default function AdminDashboardPage() {
                             backgroundColor: '#f3efe6',
                             cursor: 'pointer',
                             fontSize: '11px',
-                            fontWeight: 800,
-                            color: '#3d4a3e',
-                            letterSpacing: '0.08em'
+                            fontWeight: 700,
+                            color: '#3d4a3e'
                         }}
                     >
-                        <IconRefreshSync className={loading ? 'animate-spin' : ''} /> LÀM MỚI DỮ LIỆU
+                        <RotateCw size={14} className={loading ? 'animate-spin' : ''} /> LÀM MỚI DỮ LIỆU
                     </button>
 
                     <a
@@ -264,12 +335,11 @@ export default function AdminDashboardPage() {
                             color: '#ffffff',
                             textDecoration: 'none',
                             fontSize: '11px',
-                            fontWeight: 800,
-                            letterSpacing: '0.08em',
+                            fontWeight: 700,
                             boxShadow: '0 6px 18px rgba(91, 110, 93, 0.28)'
                         }}
                     >
-                        <IconCrown /> MỞ SEPAY
+                        <Crown size={15} /> MỞ SEPAY
                     </a>
                 </div>
             </header>
@@ -289,18 +359,18 @@ export default function AdminDashboardPage() {
                         boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#657566' }}>
-                                DOANH THU THỰC NHẬN
+                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#657566' }}>
+                                Doanh thu thực nhận
                             </span>
                             <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(91, 110, 93, 0.15)', color: '#5b6e5d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <IconCoinDiamond />
+                                <Gem size={22} />
                             </div>
                         </div>
-                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: '32px', fontWeight: 700, color: '#3d4a3e', marginTop: '18px', letterSpacing: '-0.01em' }}>
-                            {stats.totalRevenue.toLocaleString('vi-VN')} <span style={{ fontSize: '18px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600 }}>đ</span>
+                        <div style={{ fontSize: '30px', fontWeight: 700, color: '#3d4a3e', marginTop: '14px' }}>
+                            {formatVND(stats.totalRevenue)}
                         </div>
-                        <div style={{ fontSize: '12px', color: '#5b6e5d', marginTop: '10px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ color: '#b87a5c' }}>✦</span> Tự động khớp VietQR SePay
+                        <div style={{ fontSize: '12px', color: '#5b6e5d', marginTop: '10px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Sparkles size={12} style={{ color: '#b87a5c' }} /> Tự động khớp VietQR SePay
                         </div>
                     </div>
 
@@ -313,18 +383,18 @@ export default function AdminDashboardPage() {
                         boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#657566' }}>
-                                ĐƠN ĐÃ THANH TOÁN
+                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#657566' }}>
+                                Đơn đã thanh toán
                             </span>
                             <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(184, 122, 92, 0.15)', color: '#b87a5c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <IconSilkBag />
+                                <ShoppingBag size={22} />
                             </div>
                         </div>
-                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: '32px', fontWeight: 700, color: '#3d4a3e', marginTop: '18px' }}>
-                            {stats.paidOrders} <span style={{ fontSize: '16px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, color: '#657566' }}>/ {stats.totalOrders} đơn</span>
+                        <div style={{ fontSize: '30px', fontWeight: 700, color: '#3d4a3e', marginTop: '14px' }}>
+                            {stats.paidOrders} <span style={{ fontSize: '16px', fontWeight: 500, color: '#657566' }}>/ {stats.totalOrders} đơn</span>
                         </div>
-                        <div style={{ fontSize: '12px', color: '#b87a5c', marginTop: '10px', fontWeight: 700 }}>
-                            ✦ Sẵn sàng xuất kho & đóng gói
+                        <div style={{ fontSize: '12px', color: '#b87a5c', marginTop: '10px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Sparkles size={12} /> Sẵn sàng xuất kho & đóng gói
                         </div>
                     </div>
 
@@ -337,214 +407,550 @@ export default function AdminDashboardPage() {
                         boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#657566' }}>
-                                ĐƠN CHỜ TIỀN VỀ
+                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#657566' }}>
+                                Đơn chờ tiền về
                             </span>
                             <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(217, 119, 6, 0.15)', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <IconClockHourglass />
+                                <Hourglass size={22} />
                             </div>
                         </div>
-                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: '32px', fontWeight: 700, color: '#D97706', marginTop: '18px' }}>
-                            {stats.pendingOrders} <span style={{ fontSize: '16px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, color: '#657566' }}>đơn</span>
+                        <div style={{ fontSize: '30px', fontWeight: 700, color: '#D97706', marginTop: '14px' }}>
+                            {stats.pendingOrders} <span style={{ fontSize: '16px', fontWeight: 500, color: '#657566' }}>đơn</span>
                         </div>
-                        <div style={{ fontSize: '12px', color: '#D97706', marginTop: '10px', fontWeight: 700 }}>
-                            ⏳ Đang lắng nghe Webhook Ngân hàng
+                        <div style={{ fontSize: '12px', color: '#D97706', marginTop: '10px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Hourglass size={12} /> Đang lắng nghe Webhook Ngân hàng
                         </div>
                     </div>
 
                 </div>
 
-                {/* SEARCH & FILTER */}
-                <div style={{
-                    backgroundColor: '#f3efe6',
-                    borderRadius: '20px',
-                    border: '1px solid rgba(91, 110, 93, 0.2)',
-                    padding: '20px 28px',
-                    marginBottom: '28px',
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '20px',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                }}>
-
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        flex: 1,
-                        minWidth: '320px',
-                        backgroundColor: '#fbf9f5',
-                        padding: '10px 20px',
-                        borderRadius: '30px',
-                        border: '1px solid rgba(91, 110, 93, 0.22)'
-                    }}>
-                        <IconSearchLens />
-                        <input
-                            type="text"
-                            placeholder="Tìm theo Mã đơn (VYYY-xxx), Tên nàng thơ, Số điện thoại..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '13px', color: '#3d4a3e' }}
-                        />
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {['ALL', 'CHO_THANH_TOAN', 'DA_THANH_TOAN', 'HOAN_THANH'].map((st) => (
-                            <button
-                                key={st}
-                                onClick={() => setStatusFilter(st)}
-                                style={{
-                                    padding: '8px 18px',
-                                    borderRadius: '20px',
-                                    border: 'none',
-                                    fontSize: '11px',
-                                    fontWeight: 800,
-                                    cursor: 'pointer',
-                                    letterSpacing: '0.06em',
-                                    transition: 'all 0.2s',
-                                    backgroundColor: statusFilter === st ? '#5b6e5d' : 'transparent',
-                                    color: statusFilter === st ? '#ffffff' : '#657566'
-                                }}
-                            >
-                                {st === 'ALL' ? 'TẤT CẢ' : st === 'CHO_THANH_TOAN' ? 'CHỜ TIỀN' : st === 'DA_THANH_TOAN' ? 'ĐÃ TIỀN' : 'HOÀN THÀNH'}
-                            </button>
-                        ))}
-                    </div>
-
+                {/* TAB SWITCHER */}
+                <div style={{ display: 'flex', gap: '12px', marginBottom: '28px', borderBottom: '1px solid rgba(91, 110, 93, 0.2)', paddingBottom: '12px' }}>
+                    <button
+                        onClick={() => setActiveTab('ORDERS')}
+                        style={{
+                            padding: '10px 24px',
+                            borderRadius: '30px',
+                            border: 'none',
+                            fontSize: '13px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            backgroundColor: activeTab === 'ORDERS' ? '#5b6e5d' : 'transparent',
+                            color: activeTab === 'ORDERS' ? '#ffffff' : '#657566',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            transition: 'all 0.25s ease'
+                        }}
+                    >
+                        <Package size={16} /> Quản lý đơn hàng ({orders.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('PRODUCTS')}
+                        style={{
+                            padding: '10px 24px',
+                            borderRadius: '30px',
+                            border: 'none',
+                            fontSize: '13px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            backgroundColor: activeTab === 'PRODUCTS' ? '#5b6e5d' : 'transparent',
+                            color: activeTab === 'PRODUCTS' ? '#ffffff' : '#657566',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            transition: 'all 0.25s ease'
+                        }}
+                    >
+                        <Shirt size={16} /> Gắn sản phẩm vào dàn sào ({products.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('RACKS')}
+                        style={{
+                            padding: '10px 24px',
+                            borderRadius: '30px',
+                            border: 'none',
+                            fontSize: '13px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            backgroundColor: activeTab === 'RACKS' ? '#5b6e5d' : 'transparent',
+                            color: activeTab === 'RACKS' ? '#ffffff' : '#657566',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            transition: 'all 0.25s ease'
+                        }}
+                    >
+                        <Pin size={16} /> Quản lý Dàn sào / Bộ sưu tập ({racks.length})
+                    </button>
                 </div>
 
-                {/* BẢNG ĐƠN HÀNG */}
-                <div style={{
-                    backgroundColor: '#f3efe6',
-                    borderRadius: '24px',
-                    border: '1px solid rgba(91, 110, 93, 0.2)',
-                    overflow: 'hidden',
-                    boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
-                }}>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-                            <thead>
-                                <tr style={{ backgroundColor: 'rgba(91, 110, 93, 0.08)', borderBottom: '1px solid rgba(91, 110, 93, 0.18)', color: '#5b6e5d', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-                                    <th style={{ padding: '20px 24px' }}>Mã Đơn</th>
-                                    <th style={{ padding: '20px 24px' }}>Thông Tin Khách</th>
-                                    <th style={{ padding: '20px 24px' }}>Sản Phẩm Đặt Mua</th>
-                                    <th style={{ padding: '20px 24px' }}>Phương Thức & Tiền</th>
-                                    <th style={{ padding: '20px 24px' }}>Trạng Thái</th>
-                                    <th style={{ padding: '20px 24px', textAlign: 'center' }}>Hành Động Admin</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredOrders.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={6} style={{ textAlign: 'center', padding: '60px', color: '#94a395' }}>
-                                            <div style={{ fontFamily: "'Cinzel', serif", fontSize: '16px', color: '#3d4a3e' }}>Chưa tìm thấy đơn hàng nào</div>
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    filteredOrders.map((order) => (
-                                        <tr key={order.id} style={{ borderBottom: '1px solid rgba(91, 110, 93, 0.1)' }}>
+                {activeTab === 'ORDERS' && (
+                    <>
+                        {/* SEARCH & FILTER FOR ORDERS */}
+                        <div style={{
+                            backgroundColor: '#f3efe6',
+                            borderRadius: '20px',
+                            border: '1px solid rgba(91, 110, 93, 0.2)',
+                            padding: '20px 28px',
+                            marginBottom: '28px',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '20px',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                        }}>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                flex: 1,
+                                minWidth: '320px',
+                                backgroundColor: '#fbf9f5',
+                                padding: '10px 20px',
+                                borderRadius: '30px',
+                                border: '1px solid rgba(91, 110, 93, 0.22)'
+                            }}>
+                                <Search size={18} color="#657566" />
+                                <input
+                                    type="text"
+                                    placeholder="Tìm theo Mã đơn (VYYY-xxx), Tên nàng thơ, Số điện thoại..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '13px', color: '#3d4a3e' }}
+                                />
+                            </div>
 
-                                            <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
-                                                <div style={{ fontFamily: "'Cinzel', serif", fontWeight: 700, color: '#3d4a3e', fontSize: '15px' }}>{order.id}</div>
-                                                <div style={{ fontSize: '11px', color: '#94a395', marginTop: '6px' }}>
-                                                    {new Date(order.createdAt).toLocaleString('vi-VN')}
-                                                </div>
-                                            </td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {['ALL', 'CHO_THANH_TOAN', 'DA_THANH_TOAN', 'HOAN_THANH'].map((st) => (
+                                    <button
+                                        key={st}
+                                        onClick={() => setStatusFilter(st)}
+                                        style={{
+                                            padding: '8px 18px',
+                                            borderRadius: '20px',
+                                            border: 'none',
+                                            fontSize: '12px',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            backgroundColor: statusFilter === st ? '#5b6e5d' : 'transparent',
+                                            color: statusFilter === st ? '#ffffff' : '#657566'
+                                        }}
+                                    >
+                                        {st === 'ALL' ? 'Tất cả' : st === 'CHO_THANH_TOAN' ? 'Chờ tiền' : st === 'DA_THANH_TOAN' ? 'Đã tiền' : 'Hoàn thành'}
+                                    </button>
+                                ))}
+                            </div>
 
-                                            <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
-                                                <div style={{ fontWeight: 800, color: '#3d4a3e', fontSize: '14px' }}>{order.customerName}</div>
-                                                <div style={{ fontSize: '12px', color: '#b87a5c', fontWeight: 800, marginTop: '2px' }}>{order.phone}</div>
-                                                <div style={{ fontSize: '12px', color: '#657566', marginTop: '6px', maxWidth: '240px', lineHeight: '1.4' }}>
-                                                    {order.address}
-                                                </div>
-                                                {order.note && (
-                                                    <div style={{ fontSize: '11px', color: '#b87a5c', fontStyle: 'italic', marginTop: '6px', backgroundColor: 'rgba(184, 122, 92, 0.08)', padding: '4px 8px', borderRadius: '6px' }}>
-                                                        {order.note}
-                                                    </div>
-                                                )}
-                                            </td>
+                        </div>
 
-                                            <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
-                                                {order.items.map((item, idx) => (
-                                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-                                                        <img src={item.image} alt={item.productName} style={{ width: '40px', height: '52px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(91, 110, 93, 0.2)' }} />
-                                                        <div>
-                                                            <div style={{ fontWeight: 700, fontSize: '12px', color: '#3d4a3e' }}>{item.productName}</div>
-                                                            <div style={{ fontSize: '11px', color: '#657566', marginTop: '2px' }}>
-                                                                Size: <strong style={{ color: '#3d4a3e' }}>{item.size}</strong> • Màu: <strong style={{ color: '#3d4a3e' }}>{item.color}</strong> • x{item.quantity}
-                                                            </div>
+                        {/* BẢNG ĐƠN HÀNG */}
+                        <div style={{
+                            backgroundColor: '#f3efe6',
+                            borderRadius: '24px',
+                            border: '1px solid rgba(91, 110, 93, 0.2)',
+                            overflow: 'hidden',
+                            boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
+                        }}>
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: 'rgba(91, 110, 93, 0.08)', borderBottom: '1px solid rgba(91, 110, 93, 0.18)', color: '#5b6e5d', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                                            <th style={{ padding: '20px 24px' }}>Mã Đơn</th>
+                                            <th style={{ padding: '20px 24px' }}>Thông Tin Khách</th>
+                                            <th style={{ padding: '20px 24px' }}>Sản Phẩm Đặt Mua</th>
+                                            <th style={{ padding: '20px 24px' }}>Phương Thức & Tiền</th>
+                                            <th style={{ padding: '20px 24px' }}>Trạng Thái</th>
+                                            <th style={{ padding: '20px 24px' }}>Hành Động Admin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredOrders.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={6} style={{ textAlign: 'center', padding: '60px', color: '#94a395' }}>
+                                                    <div style={{ fontFamily: "var(--font-body), 'Be Vietnam Pro', sans-serif", fontSize: '16px', color: '#3d4a3e' }}>Chưa tìm thấy đơn hàng nào</div>
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            filteredOrders.map((order) => (
+                                                <tr key={order.id} style={{ borderBottom: '1px solid rgba(91, 110, 93, 0.1)' }}>
+
+                                                    <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
+                                                        <div style={{ fontFamily: "var(--font-body), 'Be Vietnam Pro', sans-serif", fontWeight: 700, color: '#3d4a3e', fontSize: '15px' }}>{order.id}</div>
+                                                        <div style={{ fontSize: '11px', color: '#94a395', marginTop: '6px' }}>
+                                                            {new Date(order.createdAt).toLocaleString('vi-VN')}
                                                         </div>
-                                                    </div>
-                                                ))}
-                                            </td>
+                                                    </td>
 
-                                            <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
-                                                <div style={{ fontFamily: "'Cinzel', serif", fontSize: '16px', fontWeight: 700, color: '#b87a5c' }}>
-                                                    {order.totalPrice.toLocaleString('vi-VN')} đ
-                                                </div>
-                                                <div style={{ marginTop: '6px' }}>
-                                                    {order.paymentMethod === 'VIETQR' ? (
-                                                        <span style={{ fontSize: '10px', fontWeight: 800, backgroundColor: 'rgba(91, 110, 93, 0.15)', color: '#5b6e5d', padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.04em' }}>
-                                                            VIETQR SEPAY
-                                                        </span>
-                                                    ) : (
-                                                        <span style={{ fontSize: '10px', fontWeight: 800, backgroundColor: 'rgba(101, 117, 102, 0.15)', color: '#657566', padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.04em' }}>
-                                                            THANH TOÁN COD
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
-
-                                            <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
-                                                {order.status === 'DA_THANH_TOAN' ? (
-                                                    <div>
-                                                        <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: 'rgba(91, 110, 93, 0.2)', color: '#5b6e5d', padding: '6px 12px', borderRadius: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}>
-                                                            <IconCheckSeal /> ĐÃ THANH TOÁN
-                                                        </span>
-                                                        {order.paidAt && (
-                                                            <div style={{ fontSize: '10px', color: '#5b6e5d', marginTop: '6px' }}>
-                                                                Khớp lúc: {new Date(order.paidAt).toLocaleTimeString('vi-VN')}
+                                                    <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
+                                                        <div style={{ fontWeight: 800, color: '#3d4a3e', fontSize: '14px' }}>{order.customerName}</div>
+                                                        <div style={{ fontSize: '12px', color: '#b87a5c', fontWeight: 700, marginTop: '2px' }}>{order.phone}</div>
+                                                        <div style={{ fontSize: '11px', color: '#657566', marginTop: '4px', maxWidth: '200px' }}>{order.address}</div>
+                                                        {order.note && (
+                                                            <div style={{ fontSize: '11px', fontStyle: 'italic', color: '#8c766b', marginTop: '4px' }}>
+                                                                " {order.note} "
                                                             </div>
                                                         )}
-                                                    </div>
-                                                ) : order.status === 'CHO_THANH_TOAN' ? (
-                                                    <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: 'rgba(217, 119, 6, 0.15)', color: '#D97706', padding: '6px 12px', borderRadius: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}>
-                                                        <IconClockHourglass /> CHỜ CHUYỂN KHOẢN
-                                                    </span>
-                                                ) : (
-                                                    <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: '#fbf9f5', color: '#657566', padding: '6px 12px', borderRadius: '16px' }}>
-                                                        {order.status}
-                                                    </span>
-                                                )}
-                                            </td>
+                                                    </td>
 
-                                            <td style={{ padding: '20px 24px', verticalAlign: 'top', textAlign: 'center' }}>
-                                                {order.status === 'CHO_THANH_TOAN' && (
-                                                    <button
-                                                        onClick={() => handleUpdateStatus(order.id, 'DA_THANH_TOAN')}
-                                                        style={{ padding: '8px 16px', borderRadius: '20px', border: 'none', backgroundColor: '#5b6e5d', color: '#fff', fontSize: '11px', fontWeight: 800, cursor: 'pointer', letterSpacing: '0.04em' }}
-                                                    >
-                                                        Xác nhận đã nhận tiền
-                                                    </button>
-                                                )}
-                                                {order.status === 'DA_THANH_TOAN' && (
-                                                    <button
-                                                        onClick={() => handleUpdateStatus(order.id, 'HOAN_THANH')}
-                                                        style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid rgba(91, 110, 93, 0.3)', backgroundColor: '#fbf9f5', color: '#5b6e5d', fontSize: '11px', fontWeight: 800, cursor: 'pointer', letterSpacing: '0.04em' }}
-                                                    >
-                                                        Hoàn thành ➔
-                                                    </button>
-                                                )}
-                                            </td>
+                                                    <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                            {order.items.map((item, idx) => (
+                                                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                    <img src={item.image} alt={item.productName} style={{ width: '36px', height: '46px', objectFit: 'cover', borderRadius: '6px', border: '1px solid rgba(91, 110, 93, 0.2)' }} />
+                                                                    <div>
+                                                                        <div style={{ fontWeight: 700, fontSize: '12px', color: '#3d4a3e' }}>{item.productName}</div>
+                                                                        <div style={{ fontSize: '10px', color: '#657566' }}>
+                                                                            Size: <strong>{item.size}</strong> • Màu: <strong>{item.color}</strong> • x{item.quantity}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </td>
 
+                                                    <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
+                                                        <div style={{ fontFamily: "var(--font-body), 'Be Vietnam Pro', sans-serif", fontSize: '16px', fontWeight: 700, color: '#b87a5c' }}>
+                                                            {formatVND(order.totalPrice)}
+                                                        </div>
+                                                        <div style={{ marginTop: '6px' }}>
+                                                            <span style={{ fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '12px', backgroundColor: 'rgba(91, 110, 93, 0.12)', color: '#5b6e5d' }}>
+                                                                {order.paymentMethod === 'VIETQR' ? 'VIETQR SEPAY' : order.paymentMethod}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+
+                                                    <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
+                                                        {order.status === 'CHO_THANH_TOAN' && (
+                                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '6px 14px', borderRadius: '20px', backgroundColor: '#fef3c7', color: '#b45309', fontSize: '11px', fontWeight: 800 }}>
+                                                                <Hourglass size={12} /> CHỜ CHUYỂN KHOẢN
+                                                            </span>
+                                                        )}
+                                                        {order.status === 'DA_THANH_TOAN' && (
+                                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '6px 14px', borderRadius: '20px', backgroundColor: '#dcfce7', color: '#15803d', fontSize: '11px', fontWeight: 800 }}>
+                                                                <ShieldCheck size={12} /> ĐÃ THANH TOÁN
+                                                            </span>
+                                                        )}
+                                                        {order.status === 'HOAN_THANH' && (
+                                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '6px 14px', borderRadius: '20px', backgroundColor: '#e0f2fe', color: '#0369a1', fontSize: '11px', fontWeight: 800 }}>
+                                                                ✓ HOÀN THÀNH
+                                                            </span>
+                                                        )}
+                                                    </td>
+
+                                                    <td style={{ padding: '20px 24px', verticalAlign: 'top' }}>
+                                                        {order.status === 'CHO_THANH_TOAN' && (
+                                                            <button
+                                                                onClick={() => handleUpdateStatus(order.id, 'DA_THANH_TOAN')}
+                                                                style={{
+                                                                    padding: '8px 16px',
+                                                                    borderRadius: '20px',
+                                                                    border: 'none',
+                                                                    backgroundColor: '#5b6e5d',
+                                                                    color: '#ffffff',
+                                                                    fontSize: '11px',
+                                                                    fontWeight: 800,
+                                                                    cursor: 'pointer',
+                                                                    boxShadow: '0 4px 12px rgba(91, 110, 93, 0.25)'
+                                                                }}
+                                                            >
+                                                                Xác nhận đã nhận tiền
+                                                            </button>
+                                                        )}
+                                                        {order.status === 'DA_THANH_TOAN' && (
+                                                            <button
+                                                                onClick={() => handleUpdateStatus(order.id, 'HOAN_THANH')}
+                                                                style={{
+                                                                    padding: '8px 16px',
+                                                                    borderRadius: '20px',
+                                                                    border: '1px solid rgba(91, 110, 93, 0.3)',
+                                                                    backgroundColor: '#f3efe6',
+                                                                    color: '#3d4a3e',
+                                                                    fontSize: '11px',
+                                                                    fontWeight: 800,
+                                                                    cursor: 'pointer'
+                                                                }}
+                                                            >
+                                                                Đánh dấu Hoàn thành
+                                                            </button>
+                                                        )}
+                                                    </td>
+
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                {activeTab === 'PRODUCTS' && (
+                    <div style={{
+                        backgroundColor: '#f3efe6',
+                        borderRadius: '24px',
+                        border: '1px solid rgba(91, 110, 93, 0.2)',
+                        overflow: 'hidden',
+                        boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
+                    }}>
+                        <div style={{ padding: '24px 28px', borderBottom: '1px solid rgba(91, 110, 93, 0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#3d4a3e', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Shirt size={20} color="#5b6e5d" /> GẮN SẢN PHẨM VÀO BỘ SƯU TẬP
+                                </h3>
+                                <p style={{ fontSize: '12px', color: '#657566', marginTop: '4px', margin: 0 }}>
+                                    Chọn Dàn sào muốn treo sản phẩm. Nếu chọn "Chưa gắn sào", sản phẩm sẽ không hiển thị trên các Dàn sào 3D ở trang chủ!
+                                </p>
+                            </div>
+                        </div>
+
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+                                <thead>
+                                    <tr style={{ backgroundColor: 'rgba(91, 110, 93, 0.08)', borderBottom: '1px solid rgba(91, 110, 93, 0.18)', color: '#5b6e5d', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                                        <th style={{ padding: '18px 24px' }}>Hình Ảnh</th>
+                                        <th style={{ padding: '18px 24px' }}>Tên Sản Phẩm</th>
+                                        <th style={{ padding: '18px 24px' }}>Danh Mục</th>
+                                        <th style={{ padding: '18px 24px' }}>Giá Bán</th>
+                                        <th style={{ padding: '18px 24px' }}>Dàn Sào Hiện Tại (Treo 3D)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {products.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={5} style={{ textAlign: 'center', padding: '50px', color: '#94a395' }}>
+                                                Chưa có dữ liệu sản phẩm trong Database
+                                            </td>
                                         </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                                    ) : (
+                                        products.map((product) => (
+                                            <tr key={product.id} style={{ borderBottom: '1px solid rgba(91, 110, 93, 0.1)' }}>
+                                                <td style={{ padding: '16px 24px' }}>
+                                                    <img src={product.image} alt={product.name} style={{ width: '44px', height: '56px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(91, 110, 93, 0.2)' }} />
+                                                </td>
+                                                <td style={{ padding: '16px 24px' }}>
+                                                    <div style={{ fontWeight: 800, color: '#3d4a3e', fontSize: '14px' }}>{product.name}</div>
+                                                    <span style={{ fontSize: '10px', fontWeight: 800, backgroundColor: 'rgba(184, 122, 92, 0.15)', color: '#b87a5c', padding: '3px 8px', borderRadius: '10px' }}>
+                                                        {product.tag}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '16px 24px', color: '#657566', fontWeight: 600 }}>
+                                                    {product.category}
+                                                </td>
+                                                <td style={{ padding: '16px 24px', fontFamily: "var(--font-body), 'Be Vietnam Pro', sans-serif", fontWeight: 700, color: '#b87a5c' }}>
+                                                    {formatVND(product.price)}
+                                                </td>
+                                                <td style={{ padding: '16px 24px' }}>
+                                                    <select
+                                                        value={product.rackId || 'NONE'}
+                                                        disabled={savingProductRackId === product.id}
+                                                        onChange={(e) => handleAssignRack(product.id, e.target.value)}
+                                                        style={{
+                                                            padding: '8px 14px',
+                                                            borderRadius: '12px',
+                                                            border: '1px solid rgba(91, 110, 93, 0.3)',
+                                                            backgroundColor: product.rackId ? '#fbf9f5' : '#fff1f2',
+                                                            color: product.rackId ? '#3d4a3e' : '#be123c',
+                                                            fontSize: '12px',
+                                                            fontWeight: 700,
+                                                            cursor: 'pointer',
+                                                            outline: 'none'
+                                                        }}
+                                                    >
+                                                        <option value="NONE">-- Chưa gắn Dàn sào --</option>
+                                                        {racks.map((r) => (
+                                                            <option key={r.id} value={r.id}>
+                                                                {r.title} ({r.id})
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    {savingProductRackId === product.id && (
+                                                        <span style={{ fontSize: '11px', color: '#5b6e5d', marginLeft: '8px', fontWeight: 700 }}>
+                                                            Đang lưu...
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                )}
+
+                {activeTab === 'RACKS' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                        {/* FORM TẠO RACK MỚI */}
+                        <div style={{
+                            backgroundColor: '#f3efe6',
+                            borderRadius: '24px',
+                            border: '1px solid rgba(91, 110, 93, 0.2)',
+                            padding: '28px',
+                            boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
+                        }}>
+                            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#3d4a3e', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Pin size={20} color="#b87a5c" /> THÊM DÀN SÀO / BỘ SƯU TẬP MỚI
+                            </h3>
+                            <form onSubmit={handleCreateRack} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', alignItems: 'end' }}>
+                                <div>
+                                    <label style={{ fontSize: '11px', fontWeight: 700, color: '#657566', display: 'block', marginBottom: '6px' }}>MÃ DÀN SÀO (RACK ID)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Vd: rack-3, bst-xuan-2026..."
+                                        value={newRackId}
+                                        onChange={(e) => setNewRackId(e.target.value)}
+                                        required
+                                        style={{ width: '100%', padding: '10px 16px', borderRadius: '12px', border: '1px solid rgba(91, 110, 93, 0.3)', backgroundColor: '#fbf9f5', fontSize: '13px', outline: 'none' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '11px', fontWeight: 700, color: '#657566', display: 'block', marginBottom: '6px' }}>TÊN BỘ SƯU TẬP</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Vd: Áo Dài Nàng Thơ..."
+                                        value={newRackTitle}
+                                        onChange={(e) => setNewRackTitle(e.target.value)}
+                                        required
+                                        style={{ width: '100%', padding: '10px 16px', borderRadius: '12px', border: '1px solid rgba(91, 110, 93, 0.3)', backgroundColor: '#fbf9f5', fontSize: '13px', outline: 'none' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '11px', fontWeight: 700, color: '#657566', display: 'block', marginBottom: '6px' }}>TÊU ĐỀ PHỤ / SUBTITLE</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Vd: Bộ Sưu Tập Áo Dài Thêu Tay..."
+                                        value={newRackSubtitle}
+                                        onChange={(e) => setNewRackSubtitle(e.target.value)}
+                                        style={{ width: '100%', padding: '10px 16px', borderRadius: '12px', border: '1px solid rgba(91, 110, 93, 0.3)', backgroundColor: '#fbf9f5', fontSize: '13px', outline: 'none' }}
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={creatingRack}
+                                    style={{
+                                        padding: '12px 24px',
+                                        borderRadius: '12px',
+                                        border: 'none',
+                                        backgroundColor: '#5b6e5d',
+                                        color: '#ffffff',
+                                        fontSize: '12px',
+                                        fontWeight: 800,
+                                        cursor: 'pointer',
+                                        boxShadow: '0 4px 12px rgba(91, 110, 93, 0.25)'
+                                    }}
+                                >
+                                    {creatingRack ? 'Đang tạo...' : '+ TẠO DÀN SÀO'}
+                                </button>
+                            </form>
+                        </div>
+
+                        {/* DANH SÁCH RACKS HIỆN CÓ */}
+                        <div style={{
+                            backgroundColor: '#f3efe6',
+                            borderRadius: '24px',
+                            border: '1px solid rgba(91, 110, 93, 0.2)',
+                            overflow: 'hidden',
+                            boxShadow: '0 10px 30px rgba(61, 74, 62, 0.04)'
+                        }}>
+                            <div style={{ padding: '24px 28px', borderBottom: '1px solid rgba(91, 110, 93, 0.15)' }}>
+                                <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#3d4a3e', margin: 0 }}>
+                                    DANH SÁCH DÀN SÀO (BỘ SƯU TẬP 3D) HIỆN CÓ
+                                </h3>
+                            </div>
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: 'rgba(91, 110, 93, 0.08)', borderBottom: '1px solid rgba(91, 110, 93, 0.18)', color: '#5b6e5d', fontSize: '11px', textTransform: 'uppercase' }}>
+                                            <th style={{ padding: '18px 24px' }}>Rack ID</th>
+                                            <th style={{ padding: '18px 24px' }}>Tên Bộ Sưu Tập</th>
+                                            <th style={{ padding: '18px 24px' }}>Mô Tả Phụ</th>
+                                            <th style={{ padding: '18px 24px' }}>Số Sản Phẩm Treo</th>
+                                            <th style={{ padding: '18px 24px' }}>Hành Động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {racks.map((r) => {
+                                            const count = products.filter(p => p.rackId === r.id).length;
+                                            const isEditing = editingRackId === r.id;
+
+                                            return (
+                                                <tr key={r.id} style={{ borderBottom: '1px solid rgba(91, 110, 93, 0.1)' }}>
+                                                    <td style={{ padding: '16px 24px', fontWeight: 800, color: '#b87a5c' }}>{r.id}</td>
+                                                    <td style={{ padding: '16px 24px', fontWeight: 800, color: '#3d4a3e' }}>
+                                                        {isEditing ? (
+                                                            <input
+                                                                type="text"
+                                                                value={editRackTitle}
+                                                                onChange={(e) => setEditRackTitle(e.target.value)}
+                                                                style={{ padding: '6px 10px', borderRadius: '8px', border: '1px solid #5b6e5d', fontSize: '13px', width: '100%', outline: 'none' }}
+                                                            />
+                                                        ) : r.title}
+                                                    </td>
+                                                    <td style={{ padding: '16px 24px', color: '#657566' }}>
+                                                        {isEditing ? (
+                                                            <input
+                                                                type="text"
+                                                                value={editRackSubtitle}
+                                                                onChange={(e) => setEditRackSubtitle(e.target.value)}
+                                                                style={{ padding: '6px 10px', borderRadius: '8px', border: '1px solid #5b6e5d', fontSize: '13px', width: '100%', outline: 'none' }}
+                                                            />
+                                                        ) : r.subtitle}
+                                                    </td>
+                                                    <td style={{ padding: '16px 24px' }}>
+                                                        <span style={{ padding: '4px 12px', borderRadius: '20px', backgroundColor: 'rgba(91, 110, 93, 0.15)', color: '#5b6e5d', fontWeight: 800, fontSize: '11px' }}>
+                                                            {count} sản phẩm
+                                                        </span>
+                                                    </td>
+                                                    <td style={{ padding: '16px 24px' }}>
+                                                        {isEditing ? (
+                                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                                <button
+                                                                    disabled={updatingRack}
+                                                                    onClick={() => handleUpdateRack(r.id)}
+                                                                    style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', backgroundColor: '#5b6e5d', color: '#fff', fontSize: '11px', fontWeight: 800, cursor: 'pointer' }}
+                                                                >
+                                                                    {updatingRack ? 'Đang lưu...' : 'Lưu Sửa'}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setEditingRackId(null)}
+                                                                    style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(91,110,93,0.3)', backgroundColor: '#fff', color: '#657566', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}
+                                                                >
+                                                                    Hủy
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setEditingRackId(r.id);
+                                                                        setEditRackTitle(r.title);
+                                                                        setEditRackSubtitle(r.subtitle || '');
+                                                                    }}
+                                                                    style={{ padding: '6px 14px', borderRadius: '10px', border: '1px solid rgba(91, 110, 93, 0.3)', backgroundColor: '#f3efe6', color: '#3d4a3e', fontSize: '11px', fontWeight: 800, cursor: 'pointer' }}
+                                                                >
+                                                                    Sửa Tiêu Đề
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDeleteRack(r.id)}
+                                                                    style={{ padding: '6px 14px', borderRadius: '10px', border: 'none', backgroundColor: '#fecdd3', color: '#be123c', fontSize: '11px', fontWeight: 800, cursor: 'pointer' }}
+                                                                >
+                                                                    Xóa
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
             </main>
 

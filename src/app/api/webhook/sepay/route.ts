@@ -18,15 +18,6 @@ export interface SepayWebhookPayload {
     accumulated: number;
 }
 
-// Global in-memory order store (dùng làm cơ sở dữ liệu tạm thời trước khi kết nối DB chính)
-declare global {
-    var __VYYY_ORDERS__: Record<string, any> | undefined;
-}
-
-if (!globalThis.__VYYY_ORDERS__) {
-    globalThis.__VYYY_ORDERS__ = {};
-}
-
 // API Endpoint: POST /api/webhook/sepay
 export async function POST(request: Request) {
     try {
@@ -65,8 +56,7 @@ export async function POST(request: Request) {
 
         // 3. Tự động chuyển trạng thái đơn hàng sang ĐÃ THANH TOÁN
         if (matchedKey) {
-            // Nếu có DATABASE_URL -> Cập nhật vào PostgreSQL Supabase / Neon
-            if (process.env.DATABASE_URL) {
+            {
                 try {
                     await prisma.order.updateMany({
                         where: {
@@ -85,13 +75,6 @@ export async function POST(request: Request) {
                 } catch (dbErr) {
                     console.error('⚠️ [PRISMA UPDATE ERR]:', dbErr);
                 }
-            }
-
-            // Đồng thời cập nhật vào In-Memory Fallback
-            if (globalThis.__VYYY_ORDERS__ && globalThis.__VYYY_ORDERS__[matchedKey]) {
-                globalThis.__VYYY_ORDERS__[matchedKey].status = 'ĐÃ THANH TOÁN (VIETQR AUTOMATIC)';
-                globalThis.__VYYY_ORDERS__[matchedKey].paidAmount = transferAmount;
-                globalThis.__VYYY_ORDERS__[matchedKey].paidAt = new Date().toISOString();
             }
         }
 

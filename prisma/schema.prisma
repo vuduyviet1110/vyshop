@@ -23,6 +23,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   wishlists     Wishlist[]
+  reviews       Review[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -103,4 +104,49 @@ model Wishlist {
   createdAt   DateTime @default(now())
 
   @@unique([userId, productId])
+}
+
+model Rack {
+  id        String    @id
+  title     String
+  subtitle  String
+  sortOrder Int       @default(0)
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  rackId      String?
+  rack        Rack?    @relation(fields: [rackId], references: [id], onDelete: SetNull)
+  name        String
+  price       Float
+  image       String
+  tag         String
+  category    String
+  description String
+  details     String[] @default([])
+  colors      Json     @default("[]")
+  sizes       String[] @default([])
+  material    String   @default("")
+  care        String   @default("")
+  inStock     Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String   // không FK: sản phẩm dự phòng trong data.ts không có dòng trong DB
+  rating    Int      // 1..5
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId]) // mỗi người một đánh giá / sản phẩm, gửi lại = sửa
+  @@index([productId, createdAt])
 }

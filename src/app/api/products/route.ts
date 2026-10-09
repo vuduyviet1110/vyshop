@@ -1,19 +1,98 @@
 import { NextResponse } from 'next/server';
-import { RACK_SETS } from '../../../data';
+import { prisma } from '../../../lib/prisma';
+
+// Gắn điểm trung bình + số đánh giá cho từng sản phẩm. Lỗi (vd. bảng Review chưa tạo) thì bỏ qua, danh sách vẫn trả bình thường.
+async function withRatings<T extends { id: string }>(products: T[]) {
+    if (products.length === 0) return products;
+    try {
+        const stats = await prisma.review.groupBy({
+            by: ['productId'],
+            where: { productId: { in: products.map((p) => p.id) } },
+            _avg: { rating: true },
+            _count: { rating: true },
+        });
+        const byId = new Map(stats.map((r) => [r.productId, r]));
+        return products.map((p) => {
+            const r = byId.get(p.id);
+            return {
+                ...p,
+                ratingAvg: r?._avg.rating ? Math.round(r._avg.rating * 10) / 10 : 0,
+                ratingCount: r?._count.rating ?? 0,
+            };
+        });
+    } catch (error) {
+        console.error('⚠️ [API PRODUCTS] Không lấy được rating:', error);
+        return products;
+    }
+}
 
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
+        // Tra cứu theo danh sách id (giỏ hàng cũ trong trình duyệt cần cập nhật lại giá/tên mới nhất)
+        const ids = searchParams.get('ids');
+        if (ids) {
+            const idList = ids.split(',').map((i) => i.trim()).filter(Boolean).slice(0, 100);
+            const found = await prisma.product.findMany({ where: { id: { in: idList } } });
+            return NextResponse.json({ success: true, products: found });
+        }
+
         const rackId = searchParams.get('rackId') || 'rack-1';
         const page = parseInt(searchParams.get('page') || '1', 10);
-        const limit = parseInt(searchParams.get('limit') || '10', 10);
+        const limit = parseInt(searchParams.get('limit') || '24', 10);
 
-        const currentRack = RACK_SETS.find(r => r.id === rackId) || RACK_SETS[0];
-        const allProducts = currentRack.products;
+        // Nếu rackId === 'all' hoặc 'ALL': Lấy TOÀN BỘ sản phẩm cho giao diện Catalog
+        if (rackId.toLowerCase() === 'all') {
+            const skip = (page - 1) * limit;
+            const [totalProducts, products] = await Promise.all([
+                prisma.product.count(),
+                prisma.product.findMany({
+                    orderBy: { createdAt: 'desc' },
+                    skip,
+                    take: limit,
+                })
+            ]);
+            const totalPages = Math.ceil(totalProducts / limit);
+            return NextResponse.json({
+                success: true,
+                rackId: 'all',
+                title: 'Tất Cả Sản Phẩm Vyyy Boutique',
+                subtitle: 'Toàn bộ BST Áo Dài & Trang Phục Cao Cấp',
+                pagination: {
+                    page,
+                    limit,
+                    totalProducts,
+                    totalPages,
+                    hasNextPage: page < totalPages,
+                    hasPrevPage: page > 1,
+                },
+                products: await withRatings(products)
+            });
+        }
 
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        const paginatedProducts = allProducts.slice(startIndex, endIndex);
+        // Lấy thông tin Rack cụ thể từ Database
+        const currentRack = await prisma.rack.findUnique({
+            where: { id: rackId }
+        }) || await prisma.rack.findFirst();
+
+        if (!currentRack) {
+            return NextResponse.json({ success: false, message: 'Không tìm thấy Dàn sào' }, { status: 404 });
+        }
+
+        const skip = (page - 1) * limit;
+
+        // Query song song: Đếm tổng số sản phẩm & Lấy sản phẩm phân trang từ Neon DB
+        const [totalProducts, products] = await Promise.all([
+            prisma.product.count({ where: { rackId: currentRack.id } }),
+            prisma.product.findMany({
+                where: { rackId: currentRack.id },
+                orderBy: { sortOrder: 'asc' },
+                skip,
+                take: limit,
+            })
+        ]);
+
+        const totalPages = Math.ceil(totalProducts / limit);
 
         return NextResponse.json({
             success: true,
@@ -23,15 +102,16 @@ export async function GET(request: Request) {
             pagination: {
                 page,
                 limit,
-                totalProducts: allProducts.length,
-                totalPages: Math.ceil(allProducts.length / limit),
-                hasNextPage: endIndex < allProducts.length,
+                totalProducts,
+                totalPages,
+                hasNextPage: page < totalPages,
                 hasPrevPage: page > 1,
             },
-            products: paginatedProducts
+            products: await withRatings(products)
         });
     } catch (error) {
         console.error('❌ [API PRODUCTS GET ERROR]:', error);
-        return NextResponse.json({ success: false, message: 'Lỗi tải danh sách sản phẩm' }, { status: 500 });
+        return NextResponse.json({ success: false, message: 'Lỗi tải danh sách sản phẩm từ Database' }, { status: 500 });
     }
 }
+
