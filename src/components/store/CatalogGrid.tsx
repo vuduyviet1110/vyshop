@@ -59,6 +59,8 @@ export function CatalogGrid({
               <img
                 src={product.image}
                 alt={product.name}
+                loading="lazy"
+                decoding="async"
                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
               />
               <span style={{ position: 'absolute', top: '10px', left: '10px', backgroundColor: 'var(--accent-sage)', color: '#fff', fontSize: '9px', fontWeight: 800, padding: '3px 8px', borderRadius: '10px' }}>

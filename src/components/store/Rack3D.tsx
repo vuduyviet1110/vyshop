@@ -60,6 +60,7 @@ export function Rack3D({
             onClick={() => changeRack(currentRackIndex === 0 ? rackCount - 1 : currentRackIndex - 1)}
             style={{ background: 'var(--bg-card)', border: '1px solid var(--border-sage)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
             title="Sào treo trước"
+            aria-label="Sào treo trước"
           >
             <ChevronLeft size={16} color="var(--accent-sage)" />
           </button>
@@ -70,6 +71,7 @@ export function Rack3D({
             onClick={() => changeRack(currentRackIndex === rackCount - 1 ? 0 : currentRackIndex + 1)}
             style={{ background: 'var(--bg-card)', border: '1px solid var(--border-sage)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
             title="Sào treo tiếp theo"
+            aria-label="Sào treo tiếp theo"
           >
             <ChevronRight size={16} color="var(--accent-sage)" />
           </button>
@@ -84,6 +86,7 @@ export function Rack3D({
           className="rack-side-nav-btn left"
           onClick={() => changeRack(currentRackIndex === 0 ? rackCount - 1 : currentRackIndex - 1)}
           title="Dàn sào trước"
+          aria-label="Dàn sào trước"
         >
           <ChevronLeft size={20} color="#ffffff" />
         </button>
@@ -91,6 +94,7 @@ export function Rack3D({
           className="rack-side-nav-btn right"
           onClick={() => changeRack(currentRackIndex === rackCount - 1 ? 0 : currentRackIndex + 1)}
           title="Dàn sào tiếp"
+          aria-label="Dàn sào tiếp theo"
         >
           <ChevronRight size={20} color="#ffffff" />
         </button>
