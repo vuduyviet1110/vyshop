@@ -859,6 +859,28 @@ body {
     font-size: 16px !important;
   }
 
+  .vyyy-user-name-text {
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 480px) {
+    .vyyy-btn-text-mobile {
+      display: none !important;
+    }
+  }
+
+  .catalog-grid-container {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .catalog-card-body {
+    padding: 8px 10px !important;
+  }
+
   .vyyy-right-column {
     padding: 12px 16px !important;
     display: flex !important;
@@ -974,7 +996,8 @@ body {
   .footer-extra-links {
     gap: 4px 12px !important;
     font-size: 10px !important;
-    padding-right: 56px; /* chừa chỗ cho bong bóng chat AI */
+    padding-right: 56px;
+    /* chừa chỗ cho bong bóng chat AI */
   }
 
   .footer-compact-row {
@@ -1105,12 +1128,19 @@ body {
 }
 
 @keyframes skeletonShimmer {
-  0% { background-position: 120% 0; }
-  100% { background-position: -120% 0; }
+  0% {
+    background-position: 120% 0;
+  }
+
+  100% {
+    background-position: -120% 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .skeleton { animation: none; }
+  .skeleton {
+    animation: none;
+  }
 }
 
 /* Áo giả trên sào: hình dáng áo dài đơn giản (tay + thân + quần) */

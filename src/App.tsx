@@ -323,9 +323,9 @@ export const App: React.FC = () => {
           style={{
             position: 'fixed',
             inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 999,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(6px)',
+            zIndex: 9999,
             display: 'flex',
             flexDirection: 'column'
           }}
@@ -333,30 +333,32 @@ export const App: React.FC = () => {
         >
           <div
             style={{
-              width: '280px',
+              width: '80%',
+              maxWidth: '300px',
               height: '100%',
-              backgroundColor: 'var(--bg-card)',
+              backgroundColor: 'var(--bg-main)',
               padding: '24px 20px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '20px',
-              boxShadow: '4px 0 20px rgba(0,0,0,0.15)'
+              gap: '24px',
+              boxShadow: '8px 0 30px rgba(0,0,0,0.2)'
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-sage)', paddingBottom: '12px' }}>
-              <span className="vyyy-heading gold-gradient-text" style={{ fontSize: '18px', fontWeight: 900 }}>MENU</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-sage)', paddingBottom: '16px' }}>
+              <span className="vyyy-heading gold-gradient-text" style={{ fontSize: '20px', fontWeight: 900, letterSpacing: '0.1em' }}>VYYY BOUTIQUE</span>
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'var(--text-primary)' }}
+                style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-primary)', padding: '4px' }}
               >
                 ✕
               </button>
             </div>
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <a href="#new" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none', color: 'var(--text-primary)', fontWeight: 700, fontSize: '13px' }}>HÀNG MỚI VỀ</a>
-              <a href="#clothing" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontSize: '13px' }}>THỜI TRANG NÀNG THƠ</a>
-              <a href="#suiting" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontSize: '13px' }}>SUIT & TRENCH COAT</a>
+              <a href="#new" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none', color: 'var(--text-primary)', fontWeight: 700, fontSize: '13px', letterSpacing: '0.05em' }}>HÀNG MỚI VỀ</a>
+              <a href="#clothing" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '13px' }}>THỜI TRANG NÀNG THƠ</a>
+              <a href="#suiting" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '13px' }}>SUIT & TRENCH COAT</a>
+              <Link href="/chinh-sach" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '13px' }}>CHÍNH SÁCH MUA HÀNG</Link>
             </nav>
           </div>
         </div>
@@ -415,7 +417,7 @@ export const App: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    padding: '6px 14px',
+                    padding: '6px 12px',
                     borderRadius: '20px',
                     backgroundColor: 'rgba(91, 110, 93, 0.12)',
                     border: '1px solid var(--accent-sage)',
@@ -428,7 +430,7 @@ export const App: React.FC = () => {
                   }}
                 >
                   <User size={14} color="var(--accent-sage)" />
-                  <span>{(session.user.name || session.user.email || 'NÀNG THƠ').toUpperCase()}</span>
+                  <span className="vyyy-user-name-text">{(session.user.name || session.user.email || 'NÀNG THƠ').toUpperCase()}</span>
                   <ChevronDown size={13} style={{ transition: 'transform 0.2s ease', transform: isUserMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                 </button>
 
@@ -449,7 +451,7 @@ export const App: React.FC = () => {
                     gap: '4px',
                   }}>
                     <Link
-                      href="/profile?tab=orders"
+                      href="/profile"
                       onClick={() => setIsUserMenuOpen(false)}
                       style={{
                         padding: '10px 12px',
@@ -466,28 +468,7 @@ export const App: React.FC = () => {
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(91, 110, 93, 0.1)'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
-                      <Package size={15} color="var(--accent-sage)" /> LỊCH SỬ ĐƠN HÀNG
-                    </Link>
-
-                    <Link
-                      href="/profile?tab=wishlist"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        textDecoration: 'none',
-                        color: 'var(--text-primary)',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        transition: 'background-color 0.2s ease',
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(184, 122, 92, 0.1)'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    >
-                      <Heart size={15} color="var(--accent-terracotta)" /> DANH SÁCH YÊU THÍCH
+                      <User size={15} color="var(--accent-sage)" /> TRANG CÁ NHÂN & ĐƠN HÀNG
                     </Link>
 
                     <Link
@@ -570,7 +551,7 @@ export const App: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '6px 14px',
+                  padding: '6px 12px',
                   borderRadius: '20px',
                   backgroundColor: 'rgba(184, 122, 92, 0.1)',
                   border: '1px solid var(--accent-terracotta)',
@@ -579,10 +560,11 @@ export const App: React.FC = () => {
                   fontSize: '11px',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 <User size={14} color="var(--accent-terracotta)" />
-                <span>ĐĂNG NHẬP</span>
+                <span className="vyyy-btn-text-mobile">ĐĂNG NHẬP</span>
               </a>
             )}
 
@@ -593,18 +575,19 @@ export const App: React.FC = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '6px 14px',
+                gap: '6px',
+                padding: '6px 12px',
                 borderRadius: '20px',
                 backgroundColor: 'rgba(91, 110, 93, 0.1)',
                 border: '1px solid var(--border-sage)',
                 transition: 'all 0.3s ease',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                whiteSpace: 'nowrap'
               }}
             >
               <ShoppingBag size={15} color="var(--accent-sage)" />
-              <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--accent-sage)' }}>
-                GIỎ HÀNG ({cartCount})
+              <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--accent-sage)' }}>
+                GIỎ HÀNG <span className="vyyy-btn-text-mobile">({cartCount})</span>
               </span>
             </div>
           </div>
