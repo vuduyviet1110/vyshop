@@ -31,6 +31,7 @@ export function CatalogGrid({
   return (
     /* CHẾ ĐỘ 2: LƯỚI CATALOGUE (SHOPEE/AMAZON STYLE - INFINITE SCROLL) - ĐÃ XÓA SUB-HEADER THỪA */
     <div
+      className="catalog-grid-wrapper"
       onScroll={handleCatalogScroll}
       style={{ flex: 1, overflowY: 'auto', maxHeight: 'calc(100vh - 120px)', padding: '16px 24px 60px', backgroundColor: 'var(--bg-main)' }}
     >

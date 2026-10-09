@@ -636,11 +636,17 @@ export const App: React.FC = () => {
       {/* HERO BANNER RESPONSIVE & THANH ĐIỀU HƯỚNG BỘ SƯU TẬP */}
       <section className="vyyy-hero-section" style={{ padding: '10px 24px', borderBottom: '1px solid var(--border-sage)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <span className="vyyy-subheading" style={{ color: 'var(--accent-terracotta)', fontWeight: 700, fontSize: '10px' }}>BỘ SƯU TẬP THU ĐÔNG 2026</span>
+          <span className="vyyy-subheading" style={{ color: 'var(--accent-terracotta)', fontWeight: 700, fontSize: '10px' }}>
+            {viewMode === '3d_rack' ? 'BỘ SƯU TẬP THU ĐÔNG 2026' : 'CATALOGUE SẢN PHẨM'}
+          </span>
           <h2 className="vyyy-heading gold-gradient-text vyyy-hero-title" style={{ fontSize: '18px', marginTop: '2px' }}>
-            {currentRack ? (
-              currentRack.title.replace(/\(\d+\s*mẫu[^\)]*\)/gi, '').trim()
-            ) : <span className="skeleton" style={{ display: 'block', width: 'min(420px, 70vw)', height: '20px' }} />}
+            {viewMode === '3d_rack' ? (
+              currentRack ? (
+                currentRack.title.replace(/\(\d+\s*mẫu[^\)]*\)/gi, '').trim()
+              ) : <span className="skeleton" style={{ display: 'block', width: 'min(420px, 70vw)', height: '20px' }} />
+            ) : (
+              'TOÀN BỘ THIẾT KẾ VYYY BOUTIQUE'
+            )}
           </h2>
         </div>
 
@@ -665,7 +671,7 @@ export const App: React.FC = () => {
                 transition: 'all 0.2s'
               }}
             >
-              <Layers size={14} /> BỘ SƯU TẬP
+              <Layers size={14} /> SÀO 3D
             </button>
             <button
               onClick={() => setViewMode('grid_catalog')}
@@ -684,7 +690,7 @@ export const App: React.FC = () => {
                 transition: 'all 0.2s'
               }}
             >
-              <LayoutGrid size={14} /> TẤT CẢ SẢN PHẨM
+              <LayoutGrid size={14} /> TẤT CẢ MẪU
             </button>
           </div>
         </div>

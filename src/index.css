@@ -872,13 +872,17 @@ body {
     }
   }
 
+  .catalog-grid-wrapper {
+    padding: 12px 12px 60px !important;
+  }
+
   .catalog-grid-container {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
+    gap: 12px !important;
   }
 
   .catalog-card-body {
-    padding: 8px 10px !important;
+    padding: 10px 12px !important;
   }
 
   .vyyy-right-column {
