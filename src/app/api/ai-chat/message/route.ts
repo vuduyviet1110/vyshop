@@ -229,10 +229,8 @@ ${extraContextText ? `\n${extraContextText}\n` : ''}`;
         }
 
         if (!completion) {
-            const errDetail = lastErr?.message || String(lastErr || 'Không có phản hồi từ Groq API');
-            console.error('❌ Groq API error detail:', lastErr);
             return NextResponse.json({
-                reply: `Lỗi kết nối Groq AI: ${errDetail}`,
+                reply: 'Hệ thống AI hiện đang bận hoặc quá tải. Nàng vui lòng thử lại sau giây lát nhé!',
             }, { status: 500 });
         }
 
