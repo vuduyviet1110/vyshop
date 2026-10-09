@@ -75,36 +75,31 @@ export async function POST(req: NextRequest) {
             email: user?.email || 'N/A',
         };
 
-        // Truy vấn dữ liệu thực tế từ Database (Prisma)
+        // Truy vấn dữ liệu thực tế từ Database (Prisma) song song (Promise.all) để tối ưu thời gian phản hồi
         let orderDataText = '[KHÔNG CÓ DỮ LIỆU ĐƠN HÀNG]';
         let analyticsDataText = '';
         let extraContextText = '';
 
         try {
             if (isSystemUser) {
-                // Lấy danh sách đơn hàng toàn hệ thống cho Admin/Staff
-                const orders = await prisma.order.findMany({
-                    take: 10,
-                    orderBy: { createdAt: 'desc' },
-                    include: { items: true },
-                });
+                const [orders, totalOrders, revenueAgg, totalProducts, totalUsersCount, recentUsers] = await Promise.all([
+                    prisma.order.findMany({ take: 10, orderBy: { createdAt: 'desc' }, include: { items: true } }),
+                    (isAdminUser || isOrderManager) ? prisma.order.count() : Promise.resolve(0),
+                    (isAdminUser || isOrderManager) ? prisma.order.aggregate({ _sum: { totalPrice: true } }) : Promise.resolve({ _sum: { totalPrice: null } }),
+                    (isAdminUser || isOrderManager) ? prisma.product.count() : Promise.resolve(0),
+                    isAdminUser ? prisma.user.count() : Promise.resolve(0),
+                    isAdminUser ? prisma.user.findMany({ take: 5, orderBy: { createdAt: 'desc' }, select: { name: true, email: true, role: true } }) : Promise.resolve([]),
+                ]);
 
                 if (orders.length > 0) {
-                    orderDataText = orders.map((o, idx) => {
+                    orderDataText = orders.map((o) => {
                         const items = o.items.slice(0, 3).map(i => `    • ${i.productName} (x${i.quantity}) - ${i.size}/${i.color} (${formatVND(i.price)})`).join('\n');
                         return `• ĐƠN #${o.orderCode} (Khách: ${o.customerName} - ${o.phone}): Status ${o.status} | Tổng ${formatVND(o.totalPrice)} | PTTT: ${o.paymentMethod}\n  Sản phẩm:\n${items}`;
                     }).join('\n');
                 }
 
-                // Thống kê doanh thu & tổng quan
                 if (isAdminUser || isOrderManager) {
-                    const totalOrders = await prisma.order.count();
-                    const revenueAgg = await prisma.order.aggregate({
-                        _sum: { totalPrice: true },
-                    });
                     const totalRevenue = revenueAgg._sum.totalPrice || 0;
-                    const totalProducts = await prisma.product.count();
-
                     analyticsDataText = `=== THỐNG KÊ DOANH THU & SỐ LIỆU ===
 - Tổng đơn hàng hệ thống: ${totalOrders}
 - Tổng doanh thu: ${formatVND(totalRevenue)}
@@ -112,13 +107,7 @@ export async function POST(req: NextRequest) {
 === HẾT THỐNG KÊ ===`;
                 }
 
-                if (isAdminUser) {
-                    const totalUsersCount = await prisma.user.count();
-                    const recentUsers = await prisma.user.findMany({
-                        take: 5,
-                        orderBy: { createdAt: 'desc' },
-                        select: { name: true, email: true, role: true },
-                    });
+                if (isAdminUser && recentUsers.length > 0) {
                     const userList = recentUsers.map((u, i) => `  ${i + 1}. ${u.name || 'Ẩn danh'} (${u.email}) - Role: ${u.role}`).join('\n');
                     extraContextText = `=== SỐ LIỆU NHÂN SỰ & TÀI KHOẢN ===
 - Tổng số tài khoản đăng ký: ${totalUsersCount}
@@ -126,20 +115,20 @@ export async function POST(req: NextRequest) {
 === HẾT NHÂN SỰ ===`;
                 }
             } else {
-                // Khách hàng cá nhân: Tìm đơn hàng theo thông tin user nếu có
-                let orders: any[] = [];
-                if (user?.name || user?.email) {
-                    orders = await prisma.order.findMany({
-                        where: {
-                            OR: [
-                                { customerName: { contains: user.name || '', mode: 'insensitive' } },
-                            ]
-                        },
-                        take: 5,
-                        orderBy: { createdAt: 'desc' },
-                        include: { items: true },
-                    });
-                }
+                const [orders, sampleProducts] = await Promise.all([
+                    (user?.name || user?.email)
+                        ? prisma.order.findMany({
+                            where: { OR: [{ customerName: { contains: user.name || '', mode: 'insensitive' } }] },
+                            take: 5,
+                            orderBy: { createdAt: 'desc' },
+                            include: { items: true },
+                        })
+                        : Promise.resolve([]),
+                    prisma.product.findMany({
+                        take: 6,
+                        select: { name: true, price: true, category: true, inStock: true },
+                    }),
+                ]);
 
                 if (orders.length > 0) {
                     orderDataText = orders.map((o) => {
@@ -150,11 +139,6 @@ export async function POST(req: NextRequest) {
                     orderDataText = 'Quý khách chưa có đơn hàng nào hoặc đang tham quan mua sắm.';
                 }
 
-                // Thông tin sản phẩm catalogue sẵn có
-                const sampleProducts = await prisma.product.findMany({
-                    take: 6,
-                    select: { name: true, price: true, category: true, inStock: true }
-                });
                 if (sampleProducts.length > 0) {
                     extraContextText = `=== DANH SÁCH MỘT SỐ SẢN PHẨM NỔI BẬT ===\n` +
                         sampleProducts.map((p, i) => `  ${i + 1}. ${p.name} - Giá: ${formatVND(p.price)} (${p.category})`).join('\n');
