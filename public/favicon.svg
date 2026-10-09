@@ -1,4 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="14" fill="#3D4A3E"/>
-  <text x="32" y="44" font-family="'Playfair Display', Georgia, serif" font-size="34" font-weight="700" fill="#E8D5B7" text-anchor="middle" letter-spacing="1">V</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Nền xanh sage mờ tối đặc trưng -->
+  <rect width="100" height="100" rx="20" fill="#435546"/>
+  
+  <g transform="translate(18, 14)">
+    <!-- Biểu tượng chữ V uốn lụa cách điệu chính xác theo ảnh mẫu -->
+    <path fill="#DFBE84" d="M 5 6 L 27 6 L 15.5 35.5 L 3.5 6 Z" />
+    <path fill="#DFBE84" d="M 23.5 6 H 32 C 45 6, 56 16, 47 34 C 40 48, 25 56, 25 56 C 25 56, 39 42, 40 31 C 41.5 19, 32 13, 23.5 13 Z" />
+    <!-- Thân nối mềm giữa 2 nét V -->
+    <path fill="#DFBE84" d="M 23.5 6 C 20.5 14, 15.5 28, 25 56 C 25 56, 20.5 44, 23.5 32 Z" />
+  </g>
+  
+  <!-- Chữ VYYY thanh lịch phía dưới (Đã bỏ chữ BOUTIQUE theo yêu cầu) -->
+  <text x="50" y="85" font-family="'Playfair Display', Georgia, serif" font-size="16" font-weight="700" fill="#DFBE84" text-anchor="middle" letter-spacing="3">VYYY</text>
 </svg>
