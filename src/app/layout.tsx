@@ -21,6 +21,9 @@ const playfair = Playfair_Display({
 export const metadata = {
     title: 'Vyyy Boutique - Nàng Thơ Áo Dài & Thời Trang Thu Đông 2026',
     description: 'Trải nghiệm không gian mua sắm độc đáo, Áo Dài & Trench Coat cao cấp Vyyy Boutique.',
+    icons: {
+        icon: '/favicon.svg',
+    },
 };
 
 export default function RootLayout({
