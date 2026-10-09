@@ -295,18 +295,20 @@ export const AiChatbot: React.FC = () => {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let accumulatedContent = '';
+            let buffer = '';
 
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunkStr = decoder.decode(value, { stream: true });
-                const lines = chunkStr.split('\n');
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n\n');
+                buffer = lines.pop() || ''; // Giữ lại phần chưa trọn vẹn trong buffer
 
-                for (const line of lines) {
-                    const cleaned = line.trim();
-                    if (!cleaned || !cleaned.startsWith('data: ')) continue;
-                    const dataStr = cleaned.slice(6);
+                for (const lineGroup of lines) {
+                    const line = lineGroup.trim();
+                    if (!line || !line.startsWith('data: ')) continue;
+                    const dataStr = line.slice(6).trim();
                     if (dataStr === '[DONE]') break;
 
                     try {
@@ -325,7 +327,7 @@ export const AiChatbot: React.FC = () => {
                             });
                         }
                     } catch (e) {
-                        // Partial JSON chunk
+                        // Ignore parse error for incomplete JSON
                     }
                 }
             }
