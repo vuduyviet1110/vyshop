@@ -115,33 +115,16 @@ export async function POST(req: NextRequest) {
 === HẾT NHÂN SỰ ===`;
                 }
             } else {
-                const [orders, sampleProducts] = await Promise.all([
-                    (user?.name || user?.email)
-                        ? prisma.order.findMany({
-                            where: { OR: [{ customerName: { contains: user.name || '', mode: 'insensitive' } }] },
-                            take: 5,
-                            orderBy: { createdAt: 'desc' },
-                            include: { items: true },
-                        })
-                        : Promise.resolve([]),
-                    prisma.product.findMany({
-                        take: 6,
-                        select: { name: true, price: true, category: true, inStock: true },
-                    }),
-                ]);
-
-                if (orders.length > 0) {
-                    orderDataText = orders.map((o) => {
-                        const items = o.items.map(i => `    • ${i.productName} (x${i.quantity}) - ${i.size}/${i.color} (${formatVND(i.price)})`).join('\n');
-                        return `• ĐƠN #${o.orderCode}: Trạng thái ${o.status} | Tổng ${formatVND(o.totalPrice)} | PTTT: ${o.paymentMethod}\n  Sản phẩm:\n${items}`;
-                    }).join('\n');
-                } else {
-                    orderDataText = 'Quý khách chưa có đơn hàng nào hoặc đang tham quan mua sắm.';
-                }
-
-                if (sampleProducts.length > 0) {
-                    extraContextText = `=== DANH SÁCH MỘT SỐ SẢN PHẨM NỔI BẬT ===\n` +
-                        sampleProducts.map((p, i) => `  ${i + 1}. ${p.name} - Giá: ${formatVND(p.price)} (${p.category})`).join('\n');
+                if (user?.name || user?.email) {
+                    const orders = await prisma.order.findMany({
+                        where: { OR: [{ customerName: { contains: user.name || '', mode: 'insensitive' } }] },
+                        take: 3,
+                        orderBy: { createdAt: 'desc' },
+                        include: { items: true },
+                    });
+                    if (orders.length > 0) {
+                        orderDataText = orders.map((o) => `• ĐƠN #${o.orderCode}: Trạng thái ${o.status} | Tổng ${formatVND(o.totalPrice)}`).join('\n');
+                    }
                 }
             }
         } catch (dbErr) {
@@ -201,7 +184,7 @@ ${extraContextText ? `\n${extraContextText}\n` : ''}`;
                 completion = await groq.chat.completions.create({
                     model: modelCandidate,
                     messages,
-                    max_tokens: 600,
+                    max_tokens: 350,
                     temperature: 0.3,
                     stream: true,
                 });
