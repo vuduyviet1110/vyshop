@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Product, Rack } from '../../types/product';
 import { StarIcon } from '../ProductReviews';
@@ -159,7 +160,27 @@ export function Rack3D({
                   <div className="wooden-hanger">
                     <HangerSvg uid={String(index)} />
                     <div className="garment-card">
-                      <img src={product.image} alt={product.name} draggable={false} />
+                      {product.image.startsWith('/') ? (
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          sizes="(max-width: 768px) 92px, 110px"
+                          draggable={false}
+                          loading={index < 6 ? 'eager' : 'lazy'}
+                          fetchPriority={index < 3 ? 'high' : 'auto'}
+                          style={{ objectFit: 'contain' }}
+                        />
+                      ) : (
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          draggable={false}
+                          decoding="async"
+                          loading={index < 6 ? 'eager' : 'lazy'}
+                          fetchPriority={index < 3 ? 'high' : 'auto'}
+                        />
+                      )}
                       {!!product.ratingCount && (
                         <span className="rack-rating-pill" title={`${product.ratingAvg}/5 từ ${product.ratingCount} đánh giá`}>
                           <StarIcon size={10} />{product.ratingAvg?.toFixed(1)} <small>({product.ratingCount})</small>

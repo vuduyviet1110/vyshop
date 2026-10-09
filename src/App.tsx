@@ -19,7 +19,12 @@ const CartDrawer = dynamic(() => import('./components/store/CartDrawer').then((m
 const CheckoutModal = dynamic(() => import('./components/store/CheckoutModal').then((m) => m.CheckoutModal), { ssr: false });
 const ProductModal = dynamic(() => import('./components/store/ProductModal').then((m) => m.ProductModal), { ssr: false });
 
-export const App: React.FC = () => {
+interface AppProps {
+  initialRacks?: Rack[] | null;
+  initialFirstPage?: { rackId: string; pagination: { page: number; hasNextPage: boolean }; products: Product[] } | null;
+}
+
+export const App: React.FC<AppProps> = ({ initialRacks, initialFirstPage }) => {
   // State Giỏ hàng & Checkout (Lưu & đọc từ localStorage)
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -147,7 +152,8 @@ export const App: React.FC = () => {
       if (!res.ok) throw new Error('Không tải được danh sách dàn sào');
       return res.json();
     },
-    staleTime: 1000 * 60 * 5
+    staleTime: 1000 * 60 * 5,
+    initialData: initialRacks ? { racks: initialRacks } : undefined,
   });
   const racks = racksData?.racks ?? [];
   const rackCount = racks.length;
@@ -176,6 +182,10 @@ export const App: React.FC = () => {
       return lastPage.pagination.hasNextPage ? lastPage.pagination.page + 1 : undefined;
     },
     staleTime: 1000 * 60 * 5, // Cache dữ liệu sản phẩm trong 5 phút
+    // Dàn đầu tiên đã được render sẵn từ server
+    initialData: initialFirstPage && targetRackId === initialFirstPage.rackId
+      ? { pages: [initialFirstPage], pageParams: [1] }
+      : undefined,
   });
 
   // Gộp tất cả các sản phẩm từ các trang đã tải của TanStack Query

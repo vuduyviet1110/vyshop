@@ -50,27 +50,11 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // 4. BẢO MẬT ADVANCED SECURITY HEADERS
-    const response = NextResponse.next();
-
-    // Chống Clickjacking
-    response.headers.set('X-Frame-Options', 'DENY');
-    // Chống MIME-type Sniffing
-    response.headers.set('X-Content-Type-Options', 'nosniff');
-    // Bật XSS Filter trên trình duyệt cũ
-    response.headers.set('X-XSS-Protection', '1; mode=block');
-    // Chống Rò rỉ Referrer
-    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    // Chống Đọc trộm Permissions
-    response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-    // Bắt buộc HTTPS trong 1 năm (Strict Transport Security)
-    if (process.env.NODE_ENV === 'production') {
-        response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-    }
-
-    return response;
+    // Security headers đã chuyển sang next.config.mjs (headers()) để trang tĩnh không phải qua middleware.
+    return NextResponse.next();
 }
 
 export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+    // Chỉ chạy ở nơi thực sự cần (RBAC trang admin) -> các trang còn lại được phục vụ thẳng từ CDN.
+    matcher: ['/admin/:path*'],
 };

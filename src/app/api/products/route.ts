@@ -1,30 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
-
-// Gắn điểm trung bình + số đánh giá cho từng sản phẩm. Lỗi (vd. bảng Review chưa tạo) thì bỏ qua, danh sách vẫn trả bình thường.
-async function withRatings<T extends { id: string }>(products: T[]) {
-    if (products.length === 0) return products;
-    try {
-        const stats = await prisma.review.groupBy({
-            by: ['productId'],
-            where: { productId: { in: products.map((p) => p.id) } },
-            _avg: { rating: true },
-            _count: { rating: true },
-        });
-        const byId = new Map(stats.map((r) => [r.productId, r]));
-        return products.map((p) => {
-            const r = byId.get(p.id);
-            return {
-                ...p,
-                ratingAvg: r?._avg.rating ? Math.round(r._avg.rating * 10) / 10 : 0,
-                ratingCount: r?._count.rating ?? 0,
-            };
-        });
-    } catch (error) {
-        console.error('⚠️ [API PRODUCTS] Không lấy được rating:', error);
-        return products;
-    }
-}
+import { getRackPage, withRatings } from '../../../lib/storeData';
 
 export async function GET(request: Request) {
     try {
@@ -67,48 +43,14 @@ export async function GET(request: Request) {
                     hasPrevPage: page > 1,
                 },
                 products: await withRatings(products)
-            });
+            }, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
         }
 
-        // Lấy thông tin Rack cụ thể từ Database
-        const currentRack = await prisma.rack.findUnique({
-            where: { id: rackId }
-        }) || await prisma.rack.findFirst();
-
-        if (!currentRack) {
+        const result = await getRackPage(rackId, page, limit);
+        if (!result) {
             return NextResponse.json({ success: false, message: 'Không tìm thấy Dàn sào' }, { status: 404 });
         }
-
-        const skip = (page - 1) * limit;
-
-        // Query song song: Đếm tổng số sản phẩm & Lấy sản phẩm phân trang từ Neon DB
-        const [totalProducts, products] = await Promise.all([
-            prisma.product.count({ where: { rackId: currentRack.id } }),
-            prisma.product.findMany({
-                where: { rackId: currentRack.id },
-                orderBy: { sortOrder: 'asc' },
-                skip,
-                take: limit,
-            })
-        ]);
-
-        const totalPages = Math.ceil(totalProducts / limit);
-
-        return NextResponse.json({
-            success: true,
-            rackId: currentRack.id,
-            title: currentRack.title,
-            subtitle: currentRack.subtitle,
-            pagination: {
-                page,
-                limit,
-                totalProducts,
-                totalPages,
-                hasNextPage: page < totalPages,
-                hasPrevPage: page > 1,
-            },
-            products: await withRatings(products)
-        });
+        return NextResponse.json(result, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } });
     } catch (error) {
         console.error('❌ [API PRODUCTS GET ERROR]:', error);
         return NextResponse.json({ success: false, message: 'Lỗi tải danh sách sản phẩm từ Database' }, { status: 500 });
