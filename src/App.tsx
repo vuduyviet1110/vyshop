@@ -240,12 +240,17 @@ export const App: React.FC = () => {
     // Dàn cũ trượt lướt sang bên trái
     setRollingAnimClass('rack-rolling-out');
 
+    // Thêm class mờ mượt cho Tiêu đề BST & Dàn sào
+    const titleEls = document.querySelectorAll('.title-transition');
+    titleEls.forEach(el => el.classList.add('faded'));
+
     setTimeout(() => {
       setCurrentRackIndex(newIndex);
       // Dàn mới lập tức nối đuôi đi vào từ bên phải
       setRollingAnimClass('rack-rolling-in');
 
       setTimeout(() => {
+        titleEls.forEach(el => el.classList.remove('faded'));
         setRollingAnimClass('');
         isTransitioningRef.current = false;
       }, 450);
@@ -648,7 +653,7 @@ export const App: React.FC = () => {
           <span className="vyyy-subheading" style={{ color: 'var(--accent-terracotta)', fontWeight: 700, fontSize: '10px' }}>
             {viewMode === '3d_rack' ? 'BỘ SƯU TẬP THU ĐÔNG 2026' : 'CATALOGUE SẢN PHẨM'}
           </span>
-          <h2 className="vyyy-heading gold-gradient-text vyyy-hero-title" style={{ fontSize: '18px', marginTop: '2px' }}>
+          <h2 className="vyyy-heading gold-gradient-text vyyy-hero-title title-transition" style={{ fontSize: '18px', marginTop: '2px' }}>
             {viewMode === '3d_rack' ? (
               currentRack ? (
                 currentRack.title.replace(/\(\d+\s*mẫu[^\)]*\)/gi, '').trim()

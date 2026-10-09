@@ -45,12 +45,12 @@ export function Rack3D({
       {/* Tiêu đề sub-header chỉ hiển thị khi ở 3D Rack */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid var(--border-sage)', paddingBottom: '12px' }}>
         <div>
-          <span className="vyyy-subheading" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--accent-sage)', display: 'block' }}>
+          <span className="vyyy-subheading title-transition" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--accent-sage)', display: 'block' }}>
             {currentRack ? (
               currentRack.subtitle ? currentRack.subtitle.replace(/\(\d+\s*mẫu[^\)]*\)/gi, '').replace(/\d+\s*mẫu\s*•?\s*/gi, '').trim() : ''
             ) : <span className="skeleton" style={{ display: 'block', width: '300px', height: '12px' }} />}
           </span>
-          <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+          <p className="title-transition" style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
             Cuộn chuột hoặc nhấn nút ◀ ▶ hai bên để đổi dàn sào treo khác • Click item để xem chi tiết
           </p>
         </div>

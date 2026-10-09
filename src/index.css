@@ -228,6 +228,22 @@ body {
   animation: rollRackInRight 0.5s cubic-bezier(0, 0, 0.2, 1) forwards !important;
 }
 
+/* Hiệu ứng chuyển đổi mượt mà cho Tiêu đề Bộ sưu tập & Dàn sào khi đổi sào treo */
+.title-transition {
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: opacity, transform;
+}
+
+.title-transition.faded {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.title-transition.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .rack-rolling-out .rack-caster-wheel {
   animation: rotateWheelLeft 0.5s linear infinite !important;
 }
